@@ -157,7 +157,7 @@ async function commandHud(player: Player, chatSendEvent: ChatSendBeforeEvent, pa
     }
  })
 
-export async function showHUD(player: Player, form: (ActionFormData | ModalFormData), attempts: number): Promise<ActionFormResponse | ModalFormResponse> {
+export async function showHUD(player: Player, form: (ActionFormData | ModalFormData), attempts: number = 10): Promise<ActionFormResponse | ModalFormResponse> {
     return new Promise(async (resolve) => {
       let response: ActionFormResponse;
       let attempt = 0;

@@ -1,16 +1,16 @@
 import { world, system, ItemStack, ItemTypes, BlockTypes } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
 import { set, undo, redo, copy, paste } from "./commands";
-export { getPlayerObject };
-function getPlayerObject(player) {
-    return activePlayers.get(player.name);
-}
-console.warn("playerCODESS");
 import { setUi } from "./set.js";
 import { replaceUi } from "./replace.js";
 import { addActionbarMessage } from "hud";
+import { showHUD } from "staticScripts/commandFunctions";
 const commandPrefix = ";";
-class PlayerClass {
+/**Gets the player object of a player */
+export function getPlayerObject(player) {
+    return activePlayers.get(player.name);
+}
+export class PlayerClass {
     constructor(playerName) {
         /**
          * @type {String}
@@ -146,7 +146,7 @@ function undoAdd(block, affectedBlocks, playerInstance, i) {
                     world.sendMessage(`§dSecond position set to ${block.location.x},  ${block.location.y},  ${block.location.z} (${blocksAffected})`);
                 }
                 else {
-                    const operationResult = await operation.show(player);
+                    const operationResult = await showHUD(player, operation);
                     switch (operationResult.selection) {
                         case 0:
                             setUi(player);
@@ -155,7 +155,7 @@ function undoAdd(block, affectedBlocks, playerInstance, i) {
                             replaceUi(player);
                             break;
                         case 2:
-                            copy(player);
+                            copy(getPlayerObject(player));
                             break;
                         case 3:
                             paste(player);

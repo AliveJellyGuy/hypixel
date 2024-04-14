@@ -1,40 +1,44 @@
-import { world, system, ItemStack,  EntityInventoryComponent,  ItemTypes,  Enchantment, BlockTypes, Dimension, Vector3 } from "@minecraft/server";
+import { world, system, ItemStack,  EntityInventoryComponent,  ItemTypes,  Enchantment, BlockTypes, Dimension, Vector3, Block, Player, BlockPermutation } from "@minecraft/server";
 import { ActionFormData, ActionFormResponse, ModalFormData } from "@minecraft/server-ui";
 import {set, undo, redo, copy, paste} from "./commands";
-
-
-export {getPlayerObject}
-
-function getPlayerObject(player){
-    return activePlayers.get(player.name)
-}
-
-console.warn("playerCODESS");
-
 import { setUi } from "./set.js"
 import { replaceUi } from "./replace.js"
 import { addActionbarMessage } from "hud";
+import { showHUD } from "staticScripts/commandFunctions";
 
 
 
 const commandPrefix = ";";
+/**Gets the player object of a player */
+export function getPlayerObject(player: Player) : PlayerClass {
+    return activePlayers.get(player.name)
+}
 
-class PlayerClass {
-    /**
-     * @param {String} playerName 
-     */
+interface UndoBlock {
+    location: Vector3;
+    block: BlockPermutation;
+}
 
+
+export class PlayerClass {
+    
+    /**The name of the Player */
     name : string;
+    /**The dimension the player is in( we should probably get rid of this) */
     dimension: Dimension;
+    /**The blocks the player is painting */
     paintBlocks: any;
+    /** The blocks the player is replacing the paint blocks with */
     paintReplace: any[];
+    /** The range of the paint */
     paintRange: number;
-    blockArray: any[][];
-    bL: any[][];
-    affectedBlocks: any[];
+    blockArray: BlockPermutation[][];
+    bL: Vector3[][];
+    affectedBlocks: number[];
     bL1: Vector3;
     bL2: Vector3;
-    cBR: any;
+    /**The root of the cloned blocks */
+    cBR: Vector3;
     cloneBlockArray: any[];
     cBL: any[];
     index: number;
@@ -129,7 +133,7 @@ const operation = new ActionFormData()
     .button("Paste");
 
 // A collection to store active player instances
-const activePlayers = new Map(); 
+const activePlayers : Map<string, PlayerClass> = new Map(); 
 
 
 
@@ -172,7 +176,7 @@ const activePlayers = new Map();
  * @param {Number} blocksAffected 
  * @param {PlayerClass} playerInstance 
  */
-function undoAdd(block, affectedBlocks, playerInstance, i){
+function undoAdd(block : Block, affectedBlocks: number, playerInstance: PlayerClass, i: number) {
     playerInstance.blockArray[playerInstance.index][i] = block.permutation;
     playerInstance.bL[playerInstance.index][i] = block.location;
     playerInstance.affectedBlocks[playerInstance.index] = affectedBlocks;
@@ -207,7 +211,7 @@ function undoAdd(block, affectedBlocks, playerInstance, i){
                     world.sendMessage(`§dSecond position set to ${block.location.x},  ${block.location.y},  ${block.location.z} (${blocksAffected})`)
                 }
                 else {
-                    const operationResult = await operation.show(player);
+                    const operationResult = await showHUD(player, operation) as ActionFormResponse;
                     switch (operationResult.selection) {
                         case 0:
                             setUi(player);
@@ -216,7 +220,7 @@ function undoAdd(block, affectedBlocks, playerInstance, i){
                             replaceUi(player);
                             break;
                         case 2:
-                            copy(player)
+                            copy(getPlayerObject(player));
                             break;
                         case 3:
                             paste(player);

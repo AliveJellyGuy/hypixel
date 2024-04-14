@@ -18,7 +18,9 @@ var allBlocks = BlockTypes.getAll();
 * @param {string} replaceSettingsBlocks
 * @param {import("@minecraft/server").Player} player
 */
-function replaceBlocks(replaceSettings, replaceSettingsBlocks, player) {
+function replaceBlocks(replaceSettings, replaceSettingsBlocks, playerInstance) {
+    const bL1 = playerInstance.bL1;
+    const bL2 = playerInstance.bL2;
     var counter = 0;
     try {
         blocksAffected = (Math.abs(Math.abs(bL1.x) - Math.abs(bL2.x)) + 1) * (Math.abs(Math.abs(bL1.y) - Math.abs(bL2.y)) + 1) * (Math.abs(Math.abs(bL1.z) - Math.abs(bL2.z)) + 1);

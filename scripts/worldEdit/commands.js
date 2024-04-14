@@ -1,59 +1,5 @@
 import { world, system, BlockTypes } from "@minecraft/server";
 export { set, undo, redo, copy, paste };
-class PlayerClass {
-    /**
-     * @param {String} playerName
-     */
-    constructor(playerName) {
-        /**
-         * @type {String}
-         */
-        this.name = playerName;
-        /**
-         * @type {import("@minecraft/server").BlockPermutation[][]}
-         */
-        this.blockArray = [[], [], [], [], [], [], [], [], []];
-        /**
-        * @type {import("@minecraft/server").Vector3[][]}
-        */
-        this.bL = [[], [], [], [], [], [], [], [], []];
-        /**
-        * @type {number}
-        */
-        this.affectedBlocks = [];
-        /**
-         * @type {import("@minecraft/server").Vector3}
-         */
-        this.bL1 = null;
-        /**
-         * @type {import("@minecraft/server").Vector3}
-         */
-        this.bL2 = null;
-        /**
-        * @alias cloneBlocksRoot
-        * @type {import("@minecraft/server").Vector3}
-        */
-        this.cBR = null;
-        /**
-        * @type {import("@minecraft/server").BlockPermutation[]}
-        */
-        this.cloneBlockArray = [];
-        /**
-         * @alias cloneBlockLocation
-        * @type {import("@minecraft/server").Vector3[]}
-        */
-        this.cBL = [];
-        /**
-         * @type {import("@minecraft/server").Dimension}
-         */
-        this.dimension = null;
-        this.index = 0;
-    }
-    static test() {
-        console.warn("TEST");
-    }
-}
-;
 /**
  *
  * @param {import("@minecraft/server").Block} block
@@ -61,7 +7,7 @@ class PlayerClass {
  * @param {PlayerClass} playerInstance
  */
 function undoAdd(block, affectedBlocks, playerInstance, i) {
-    playerInstance.blockArray[playerInstance.index][i] = block.permutation;
+    playerInstance.bLockArray[playerInstance.index][i] = block.permutation;
     playerInstance.bL[playerInstance.index][i] = block.location;
     playerInstance.affectedBlocks[playerInstance.index] = affectedBlocks;
 }
@@ -75,15 +21,17 @@ function copy(playerInstance) {
         playerInstance.cBR = null;
         playerInstance.cloneBlockArray = [];
         playerInstance.cBL = [];
-        const lenghtX = (Math.abs(playerInstance.bL1.x - playerInstance.bL2.x) + 1);
-        const lenghtY = (Math.abs(playerInstance.bL1.y - playerInstance.bL2.y) + 1);
-        const lenghtZ = (Math.abs(playerInstance.bL1.z - playerInstance.bL2.z) + 1);
+        const bL1 = playerInstance.bL1;
+        const bL2 = playerInstance.bL2;
+        const lenghtX = (Math.abs(bL1.x - bL2.x) + 1);
+        const lenghtY = (Math.abs(bL1.y - bL2.y) + 1);
+        const lenghtZ = (Math.abs(bL1.z - bL2.z) + 1);
         const blockLocation = {
-            x: Math.max(playerInstance.bL1.x, playerInstance.bL2.x),
-            y: Math.max(playerInstance.bL1.y, playerInstance.bL2.y),
-            z: Math.max(playerInstance.bL1.z, playerInstance.bL2.z)
+            x: Math.max(bL1.x, bL2.x),
+            y: Math.max(bL1.y, bL2.y),
+            z: Math.max(bL1.z, bL2.z)
         };
-        playerInstance.cBR = playerInstance.bL1;
+        playerInstance.cBR = bL1;
         const affectedBlocks = lenghtX * lenghtY * lenghtZ;
         if (playerInstance) {
             console.warn(playerInstance.name);
@@ -115,11 +63,13 @@ function copy(playerInstance) {
  */
 function paste(playerInstance) {
     system.run(() => {
+        const bL1 = playerInstance.bL1;
+        const bL2 = playerInstance.bL2;
         //console.warn( playerInstance.index +"START  " + playerInstance.affectedBlocks[playerInstance.index - 1])
         let offsetLocation = {
-            x: (playerInstance.bL1.x - playerInstance.cBR.x),
-            y: (playerInstance.bL1.y - playerInstance.cBR.y),
-            z: (playerInstance.bL1.z - playerInstance.cBR.z)
+            x: (bL1.x - playerInstance.cBR.x),
+            y: (bL1.y - playerInstance.cBR.y),
+            z: (bL1.z - playerInstance.cBR.z)
         };
         let i = 0;
         playerInstance.cBL.forEach(element => {
@@ -145,13 +95,18 @@ function paste(playerInstance) {
  */
 function set(playerInstance, message) {
     system.run(() => {
-        const lenghtX = (Math.abs(playerInstance.bL1.x - playerInstance.bL2.x) + 1);
-        const lenghtY = (Math.abs(playerInstance.bL1.y - playerInstance.bL2.y) + 1);
-        const lenghtZ = (Math.abs(playerInstance.bL1.z - playerInstance.bL2.z) + 1);
+        const bL1 = playerInstance.bL1;
+        const bL2 = playerInstance.bL2;
+        if (bL1 == null || bL2 == null) {
+            return;
+        }
+        const lenghtX = (Math.abs(bL1.x - bL2.x) + 1);
+        const lenghtY = (Math.abs(bL1.y - bL2.y) + 1);
+        const lenghtZ = (Math.abs(bL1.z - bL2.z) + 1);
         const blockLocation = {
-            x: Math.max(playerInstance.bL1.x, playerInstance.bL2.x),
-            y: Math.max(playerInstance.bL1.y, playerInstance.bL2.y),
-            z: Math.max(playerInstance.bL1.z, playerInstance.bL2.z)
+            x: Math.max(bL1.x, bL2.x),
+            y: Math.max(bL1.y, bL2.y),
+            z: Math.max(bL1.z, bL2.z)
         };
         const affectedBlocks = lenghtX * lenghtY * lenghtZ;
         if (playerInstance) {
@@ -173,7 +128,7 @@ function set(playerInstance, message) {
                         z: blockLocation.z - zOffset });
                     splitMessage[1].split(",").forEach(element => {
                         if (element.split("%").length > 1) {
-                            if (Math.floor(element.split("%")[0]) + percentage > rand) {
+                            if (Math.floor(Number(element.split("%")[0])) + percentage > rand) {
                                 playerInstance.blockArray[playerInstance.index][i] = offsetBlock.permutation;
                                 playerInstance.bL[playerInstance.index][i] = offsetBlock.location;
                                 playerInstance.affectedBlocks[playerInstance.index] = affectedBlocks;
