@@ -1,16 +1,16 @@
 {
 	"format_version": 2,
 	"metadata": {
-		"authors": ["StikmanMann", "CoderReal"],
+		"authors": ["StikmanMann", "CoderReal", "AliveJy"],
 		"generated_with": {
 			"blockbench_item_wizard": ["1.0.2"]
 		}
 	},
 	"header": {
 		"name": "SPHGMod",
-		"description": "Mod by StikmanMann and CoderReal and hopefuilly i 1.20d",
+		"description": "Mod by StikmanMann, CoderReal and AliveJy",
 		"min_engine_version": [1, 19, 50],
-		"uuid": "1e5fedb5-7a6c-4934-83bf-c1dd21d4f1ee",
+		"uuid": "2c4387b3-61df-486f-a396-7a75c2372d1c",
 		"version": [1, 0, 0]
 	},
 	"modules": [
