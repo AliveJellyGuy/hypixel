@@ -42,6 +42,7 @@ class Kit {
         const chest = overworld.getBlock(chestLocation);
         const chestInventory = chest.getComponent("inventory").container;
         for (let i = 0; i < chestInventory.size; i++) {
+            let equippable = false;
             const item = chestInventory.getItem(i);
             if (item == undefined) {
                 continue;
@@ -49,8 +50,13 @@ class Kit {
             armorSlot.forEach((value, key) => {
                 if (item.typeId.includes(key)) {
                     this.addItem({ item: item, slot: value, isArmor: true });
+                    equippable = true;
+                    return;
                 }
             });
+            if (equippable == false) {
+                this.addItem({ item: item, slot: i, isArmor: false });
+            }
         }
     }
 }
@@ -66,3 +72,6 @@ golden_apple.amount = 8;
 const eff = EnchantmentTypes.get("efficiency");
 diamond_pickaxe.getComponent("enchantable").addEnchantment({ type: eff, level: 2 });
 let red_kit = new Kit(chestLocation);
+for (const player of players) {
+    red_kit.giveplayerKit(player);
+}
