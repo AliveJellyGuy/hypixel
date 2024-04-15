@@ -14,9 +14,10 @@ export function getPlayerObject(player: Player) : PlayerClass {
     return activePlayers.get(player.name)
 }
 
-interface UndoBlock {
-    location: Vector3;
-    block: BlockPermutation;
+interface UndoBlocks {
+    location: Array<Vector3>;
+    block: Array<BlockPermutation>;
+    affectedBlocks: number;
 }
 
 
@@ -32,9 +33,7 @@ export class PlayerClass {
     paintReplace: any[];
     /** The range of the paint */
     paintRange: number;
-    blockArray: BlockPermutation[][];
-    bL: Vector3[][];
-    affectedBlocks: number[];
+    blockArray: Array<UndoBlocks>;
     bL1: Vector3;
     bL2: Vector3;
     /**The root of the cloned blocks */
@@ -61,23 +60,10 @@ export class PlayerClass {
          */
         this.paintReplace = [];
 
+        this.blockArray = new Array(20)
+
         this.paintRange = 0;
 
-        /**
-         * @type {import("@minecraft/server").BlockPermutation[][]}
-         */
-        this.blockArray = [[], [], [] , [], [] , [], [], [], []];
-
-         /**
-         * @type {import("@minecraft/server").Vector3[][]}
-         */
-         this.bL =  [[], [], [] , [], [] , [], [], [], []];
-
-         /**
-         * @type {number}
-         */
-         this.affectedBlocks =  [];
-        
         /**
          * @type {import("@minecraft/server").Vector3}
          */
@@ -175,13 +161,18 @@ const activePlayers : Map<string, PlayerClass> = new Map();
  * @param {import("@minecraft/server").Block} block 
  * @param {Number} blocksAffected 
  * @param {PlayerClass} playerInstance 
- */
+ *
 function undoAdd(block : Block, affectedBlocks: number, playerInstance: PlayerClass, i: number) {
     playerInstance.blockArray[playerInstance.index][i] = block.permutation;
     playerInstance.bL[playerInstance.index][i] = block.location;
     playerInstance.affectedBlocks[playerInstance.index] = affectedBlocks;
 }
+*/
 
+export const undoSave = (undoBlocks: UndoBlocks, player: Player) : void => {
+    getPlayerObject(player).blockArray.push(undoBlocks)
+    return;
+}
 //SET POS
 {
     world.beforeEvents.itemUse.subscribe(async (eventData) => {
@@ -223,7 +214,7 @@ function undoAdd(block : Block, affectedBlocks: number, playerInstance: PlayerCl
                             copy(getPlayerObject(player));
                             break;
                         case 3:
-                            paste(player);
+                            paste(getPlayerObject(player));
                     }
         
                 }
@@ -448,7 +439,7 @@ world.beforeEvents.itemUseOn.subscribe((eventData) => {
                                     //  world.sendMessage("" + percentMsgReplace.length)
                                     // world.sendMessage(`RNG: ${x} Contition <= ${(percentMsgReplace[i] + iCounterReplace)} and > ${iCounterReplace}`)
                                      if (x <= percentMsgReplace[i] + iCounterReplace && x >= iCounterReplace) {
-                                        undoAdd(offsetBlock, paintBlocksAffected, playerInstance, paintBlocksAffected)
+                                        //undoAdd(offsetBlock, paintBlocksAffected, playerInstance, paintBlocksAffected)
                                     
                                         paintBlocksAffected++;
                                         world.getDimension("overworld").fillBlocks(offsetBlock.location, offsetBlock.location, BlockTypes.get("minecraft:" + blockMsgReplace[i]));

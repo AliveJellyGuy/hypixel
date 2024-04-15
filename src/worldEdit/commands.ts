@@ -9,13 +9,13 @@ export{set, undo, redo, copy, paste};
  * @param {import("@minecraft/server").Block} block 
  * @param {Number} blocksAffected 
  * @param {PlayerClass} playerInstance 
- */
+ *
 function undoAdd(block, affectedBlocks, playerInstance, i){
     playerInstance.bLockArray[playerInstance.index][i] = block.permutation;
     playerInstance.bL[playerInstance.index][i] = block.location;
     playerInstance.affectedBlocks[playerInstance.index] = affectedBlocks;
 }
-
+*/
 
 /**
  * @returns {String}
