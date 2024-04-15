@@ -1,10 +1,14 @@
 import { world, BlockTypes, Block,  system } from "@minecraft/server";
-import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
-import { PlayerClass } from "./mainEdit"
+import { ActionFormData, ModalFormData, ModalFormResponse } from "@minecraft/server-ui";
+import { PlayerClass, sortLength, undoSave } from "./mainEdit"
+import { showHUD } from "staticScripts/commandFunctions";
 //import { undoBlocks, undoCounter, undoAdd, undoSave, bL1, bL2, deleteRow, sortLength, search, undoBlocksType } from "./mainFake.js"
 export { replaceUi };
 
 var allBlocks = BlockTypes.getAll()
+
+const search = new ModalFormData()
+.textField("Search blocks", "Example: grass");
 
 /* world.events.beforeChat.subscribe((eventData) => {
     const player = eventData.sender;
@@ -21,9 +25,18 @@ var allBlocks = BlockTypes.getAll()
 * @param {string} replaceSettingsBlocks
 * @param {import("@minecraft/server").Player} player
 */
-function replaceBlocks(message: String, playerInstance : PlayerClass) {
+export function replaceBlocks(message: String, playerInstance : PlayerClass) {
     const bL1 = playerInstance.bL1;
     const bL2 = playerInstance.bL2;
+    try {
+        var blocksAffected = (Math.abs(Math.abs(bL1.x) - Math.abs(bL2.x)) + 1) * (Math.abs(Math.abs(bL1.y) - Math.abs(bL2.y)) + 1) * (Math.abs(Math.abs(bL1.z) - Math.abs(bL2.z)) + 1)
+        var blockPermutations = new Array(blocksAffected)
+        var blockLocations = new Array(blocksAffected)
+    }
+    catch {
+        world.sendMessage("Operation couldn't be completed => Please have valid locations!")
+        return;
+    }
 
     if(message.includes("replace")){
         var replaceBlocks = message.split(" ")[1];
@@ -35,16 +48,9 @@ function replaceBlocks(message: String, playerInstance : PlayerClass) {
 
     }
     
-    var counter = 0;
-    try {
-        var blocksAffected = (Math.abs(Math.abs(bL1.x) - Math.abs(bL2.x)) + 1) * (Math.abs(Math.abs(bL1.y) - Math.abs(bL2.y)) + 1) * (Math.abs(Math.abs(bL1.z) - Math.abs(bL2.z)) + 1)
-        var blockPermutations = new Array(blocksAffected)
-        var blockLocations = new Array(blocksAffected)
-    }
-    catch {
-        world.sendMessage("Operation couldn't be completed => Please have valid locations!")
-        return;
-    }
+    let undoCounter = playerInstance.blockArray.length;
+    let counter = 0;
+    
     world.sendMessage(`Operation completed (Blocks affected: ${blocksAffected})`)
     const replaceBlockName = replaceBlocks.split(",");
 
@@ -86,18 +92,19 @@ function replaceBlocks(message: String, playerInstance : PlayerClass) {
                 let iCounterReplace = 0;
                 let offsetBlock = world.getDimension("overworld").getBlock({x: blockLocation.x -xOffset,y: blockLocation.y -yOffset,z: blockLocation.z -zOffset});
                 let x = Math.round(Math.random() * 100);
-                if ("minecraft:" + replaceBlockName.find(item => "minecraft:" + item == offsetBlock.typeId) == offsetBlock.typeId) {
+                world.sendMessage(`Comparing ${offsetBlock.typeId} with ${replaceBlockName}`);
+                if ( replaceBlockName.some(item => "minecraft:" + item == offsetBlock.typeId)) {
                     for (let i = 0; i < percentMsgReplace.length; i++) {
 
                         //world.sendMessage(`RNG: ${x} Contition <= ${(percentMsg[i] + iCounter)} and > ${iCounter}`)
                         if (x <= percentMsgReplace[i] + iCounterReplace && x >= iCounterReplace) {
 
                             blockPermutations[counter] = offsetBlock.permutation;
-
-                            console.warn(`saved under ${undoBlocks[undoCounter][counter].typeId} at ${undoCounter} ${counter}`)
+                            blockLocations[counter] = offsetBlock.location;
+                            console.warn(`saved under ${offsetBlock.typeId} at ${playerInstance.index} ${counter}`)
                             counter++;
 
-                            world.getDimension("overworld").fillBlocks(offsetBlock.location, offsetBlock.location, MinecraftBlockTypes.get("minecraft:" + blockMsgReplace[i]));
+                            world.getDimension("overworld").fillBlocks(offsetBlock.location, offsetBlock.location, BlockTypes.get("minecraft:" + blockMsgReplace[i]));
 
                         }
                         iCounterReplace += percentMsgReplace[i];
@@ -109,7 +116,8 @@ function replaceBlocks(message: String, playerInstance : PlayerClass) {
         }
     }
     blockPermutations.length = counter
-    undoSave(blocksAffected);
+    blockLocations.length = counter
+    undoSave({blocks: blockPermutations, locations: blockLocations, affectedBlocks: counter}, playerInstance);
 }
 
 async function replaceUi(player) {
@@ -129,11 +137,11 @@ async function replaceUi(player) {
     var resultBlockChoose;
     var searchResult = [];
 
-    for (var i = 0; i < resultRange.formValues[0]; i++) {
+    for (var i = 0; i < Number(resultRange.formValues[0]); i++) {
         do {
             searchResult = [];
             reSearch = false;
-            const result = await search.show(player);
+            const result = await showHUD(player, search) as ModalFormResponse;
             userBusy = result.cancelationReason;
             if (result.formValues[0] == null) {
                 player.sendMessage('§dPlease input something! \n If you want to search for evrything just type "minecraft"')
@@ -142,7 +150,7 @@ async function replaceUi(player) {
                 .button("New Search");
 
             allBlocks.forEach(item => {
-                if (item.id.includes(result.formValues[0])) {
+                if (item.id.includes(result.formValues[0] as string)) {
 
                     searchResult[searchResult.length] = item.id;
                     //  world.sendMessage("" + item.id)
@@ -163,7 +171,7 @@ async function replaceUi(player) {
         replaceBlock = replaceBlock.concat("" + searchResult[resultBlockChoose.selection - 1].split(":")[1] + ",")
     }
     var overallPercent = 0;
-    for (var i = 0; i < resultRange.formValues[1] && overallPercent < 100; i++) {
+    for (var i = 0; i < Number(resultRange.formValues[1]) && overallPercent < 100; i++) {
         var percent;
         do {
             searchResult = [];
@@ -181,7 +189,7 @@ async function replaceUi(player) {
             const blockChoose = new ActionFormData()
                 .button("New Search");
             allBlocks.forEach(item => {
-                if (item.id.includes(result.formValues[0])) {
+                if (item.id.includes(result.formValues[0] as string)) {
                     searchResult[searchResult.length] = item.id;
                 }
             })
@@ -202,5 +210,5 @@ async function replaceUi(player) {
         replaceBlockWith = replaceBlockWith.concat("" + percent + "%" + searchResult[resultBlockChoose.selection - 1].split(":")[1] + ",")
         world.sendMessage("" + replaceBlockWith)
     }
-    replaceBlocks(replaceBlock, replaceBlockWith, player)
+    replaceBlocks(`${replaceBlock} ${replaceBlockWith}`, player)
 }

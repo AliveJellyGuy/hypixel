@@ -1,16 +1,18 @@
 import { world, system, BlockTypes } from "@minecraft/server";
+import { undoSave } from "./mainEdit";
 export { set, undo, redo, copy, paste };
 /**
  *
  * @param {import("@minecraft/server").Block} block
  * @param {Number} blocksAffected
  * @param {PlayerClass} playerInstance
- */
-function undoAdd(block, affectedBlocks, playerInstance, i) {
+ *
+function undoAdd(block, affectedBlocks, playerInstance, i){
     playerInstance.bLockArray[playerInstance.index][i] = block.permutation;
     playerInstance.bL[playerInstance.index][i] = block.location;
     playerInstance.affectedBlocks[playerInstance.index] = affectedBlocks;
 }
+*/
 /**
  * @returns {String}
  * @param {PlayerClass} playerInstance
@@ -109,13 +111,20 @@ function set(playerInstance, message) {
             z: Math.max(bL1.z, bL2.z)
         };
         const affectedBlocks = lenghtX * lenghtY * lenghtZ;
+        var blockPermutations = new Array(affectedBlocks);
+        var blockLocations = new Array(affectedBlocks);
         if (playerInstance) {
             console.warn(playerInstance.name);
             console.warn(playerInstance.dimension.id);
             console.warn(playerInstance.index);
         }
         const splitMessage = message.split(" ");
-        let i = 0;
+        for (let i = 0; i < splitMessage.length; i++) {
+            if (splitMessage[i].search("%") == -1) {
+                splitMessage[i] = "100%" + splitMessage[i];
+            }
+        }
+        let counter = 0;
         for (var xOffset = 0; xOffset < lenghtX; xOffset++) {
             // player.sendMessage(`xOffset ${xOffset}`)
             for (var yOffset = 0; yOffset < lenghtY; yOffset++) {
@@ -127,27 +136,21 @@ function set(playerInstance, message) {
                         y: blockLocation.y - yOffset,
                         z: blockLocation.z - zOffset });
                     splitMessage[1].split(",").forEach(element => {
-                        if (element.split("%").length > 1) {
-                            if (Math.floor(Number(element.split("%")[0])) + percentage > rand) {
-                                playerInstance.blockArray[playerInstance.index][i] = offsetBlock.permutation;
-                                playerInstance.bL[playerInstance.index][i] = offsetBlock.location;
-                                playerInstance.affectedBlocks[playerInstance.index] = affectedBlocks;
-                                playerInstance.dimension.fillBlocks(offsetBlock, offsetBlock, BlockTypes.get("minecraft:" + element.split("%")[1]));
-                            }
+                        if (Math.floor(Number(element.split("%")[0])) + percentage > rand) {
+                            blockPermutations[counter] = offsetBlock.permutation;
+                            blockLocations[counter] = offsetBlock.location;
+                            console.warn(`saved under ${offsetBlock.typeId} at ${playerInstance.index} ${counter}`);
+                            counter++;
+                            playerInstance.dimension.fillBlocks(offsetBlock, offsetBlock, BlockTypes.get("minecraft:" + element.split("%")[1]));
                         }
-                        else {
-                            playerInstance.blockArray[playerInstance.index][i] = offsetBlock.permutation;
-                            playerInstance.bL[playerInstance.index][i] = offsetBlock.location;
-                            playerInstance.affectedBlocks[playerInstance.index] = affectedBlocks;
-                            playerInstance.dimension.fillBlocks(offsetBlock, offsetBlock, BlockTypes.get("minecraft:" + element));
-                        }
-                        console.warn(`§dsaved under ${playerInstance.blockArray[playerInstance.index][i].type.id} at ${playerInstance.index} ${i}`);
-                        i++;
+                        counter++;
                     });
                 }
             }
         }
-        playerInstance.index++;
+        blockPermutations.length = counter;
+        blockLocations.length = counter;
+        undoSave({ affectedBlocks: affectedBlocks, blocks: blockPermutations, locations: blockLocations }, playerInstance);
     });
 }
 ;
@@ -160,13 +163,16 @@ async function undo(playerInstance) {
         if (playerInstance.index == 0) {
             return ("§dThere is nothing to undo!");
         }
+        undoSave(playerInstance.blockArray[playerInstance.index - 1], playerInstance);
+        const blocksAffected = playerInstance.blockArray[playerInstance.index - 1].affectedBlocks;
         //console.warn( playerInstance.index +"START  " + playerInstance.affectedBlocks[playerInstance.index - 1])
-        for (let i = 0; i < playerInstance.affectedBlocks[playerInstance.index - 1]; i++) {
-            playerInstance.blockArray[playerInstance.index][i] = playerInstance.dimension.getBlock(playerInstance.bL[playerInstance.index - 1][i]).permutation;
-            playerInstance.bL[playerInstance.index][i] = playerInstance.bL[playerInstance.index - 1][i];
-            playerInstance.dimension.fillBlocks(playerInstance.bL[playerInstance.index - 1][i], playerInstance.bL[playerInstance.index - 1][i], playerInstance.blockArray[playerInstance.index - 1][i]);
+        var blockPermutations = new Array(blocksAffected);
+        var blockLocations = new Array(blocksAffected);
+        for (let i = 0; i < blocksAffected; i++) {
+            const blockLocation = playerInstance.blockArray[playerInstance.index - 1].locations[i];
+            playerInstance.dimension.fillBlocks(blockLocation, blockLocation, playerInstance.blockArray[playerInstance.index - 1].blocks[i]);
         }
-        playerInstance.index--;
+        playerInstance.index -= 1;
         return "SHIT";
     });
 }

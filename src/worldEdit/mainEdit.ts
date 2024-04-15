@@ -2,7 +2,7 @@ import { world, system, ItemStack,  EntityInventoryComponent,  ItemTypes,  Encha
 import { ActionFormData, ActionFormResponse, ModalFormData } from "@minecraft/server-ui";
 import {set, undo, redo, copy, paste} from "./commands";
 import { setUi } from "./set.js"
-import { replaceUi } from "./replace.js"
+import { replaceBlocks, replaceUi } from "./replace.js"
 import { addActionbarMessage } from "hud";
 import { showHUD } from "staticScripts/commandFunctions";
 
@@ -15,8 +15,8 @@ export function getPlayerObject(player: Player) : PlayerClass {
 }
 
 interface UndoBlocks {
-    location: Array<Vector3>;
-    block: Array<BlockPermutation>;
+    locations: Array<Vector3>;
+    blocks: Array<BlockPermutation>;
     affectedBlocks: number;
 }
 
@@ -169,8 +169,9 @@ function undoAdd(block : Block, affectedBlocks: number, playerInstance: PlayerCl
 }
 */
 
-export const undoSave = (undoBlocks: UndoBlocks, player: Player) : void => {
-    getPlayerObject(player).blockArray.push(undoBlocks)
+export const undoSave = (undoBlocks: UndoBlocks, playerInstance: PlayerClass) : void => {
+    playerInstance.blockArray[playerInstance.index] = undoBlocks
+    playerInstance.index += 1;
     return;
 }
 //SET POS
@@ -367,6 +368,16 @@ export const undoSave = (undoBlocks: UndoBlocks, player: Player) : void => {
                         playerInstance.paintRange = Number(message.split(" ")[3])
                         player.playSound("note.pling")
                         break;
+                    case ";replace":
+                        if(!player.hasTag("worldEdit"))
+                        {
+                            player.playSound("note.bass")
+                            player.sendMessage(`§dYou don't have permission to use this command!`)
+                            return;
+                        }                            
+                        replaceBlocks(message, playerInstance)
+                        player.playSound("note.pling")
+                        break;
                     default:
                        // player.playSound("note.bass")
                      //   player.sendMessage(`"${message.split(" ")[0]}" §d is not a valid command!`)
@@ -493,9 +504,9 @@ system.runInterval(()=>{
    
 })
 
-export{sortLength}
 
-function sortLength(arr) {
+
+export function sortLength(arr) {
     if (arr.length <= 1) {
         return arr;
     }

@@ -9,7 +9,7 @@ import { getPlayerObject, sortLength } from "./mainEdit";
 var commaMsg;
 
 const search = new ModalFormData()
-    .textField("Search blocks", "Example: grass");
+.textField("Search blocks", "Example: grass");
 
 var allBlocks = BlockTypes.getAll()
 

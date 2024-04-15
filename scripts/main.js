@@ -1,6 +1,7 @@
 import { world, system } from "@minecraft/server";
 import "./betterChat";
-import "./bridge";
+//import "./bridge";
+import "./worldEdit/mainEdit";
 system.runInterval(() => {
     const players = world.getAllPlayers();
     for (const player of players) {
