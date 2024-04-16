@@ -1,5 +1,6 @@
 import { world, system, BlockPermutation, BlockTypes, Vector3} from "@minecraft/server";
-import { PlayerClass, undoSave } from "./mainEdit";
+import { PlayerClass, getPlayerObject, undoSave } from "./mainEdit";
+import { addCommand } from "staticScripts/commandFunctions";
 
 export{set, undo, redo, copy, paste};
 
@@ -83,11 +84,13 @@ function copy(playerInstance: PlayerClass){
     
 };
 
+
+
+
 /**
- * @returns {String}
  * @param {PlayerClass} playerInstance 
  */
-function paste(playerInstance: PlayerClass) {
+const paste = (playerInstance: PlayerClass) => {
     system.run(() => {
         const bL1  = playerInstance.bL1;
         const bL2  = playerInstance.bL2;
@@ -98,24 +101,30 @@ function paste(playerInstance: PlayerClass) {
             z:   (bL1.z - playerInstance.cBR.z)
            }
         
-           let i = 0;
-
-        playerInstance.cBL.forEach(element => {
+        let affectedBlocks = playerInstance.cBL.length;
+        let i = 0;
+        let blockPermutations = new Array(affectedBlocks)
+        let blockLocations = new Array(affectedBlocks)
+        for(i = 0; i < affectedBlocks; i++){
+            const cloneBlockLocation = playerInstance.cBL[i];
             let forBlockLocation = {
-                x: element.x + offsetLocation.x, 
-                y: element.y + offsetLocation.y, 
-                z: element.z + offsetLocation.z}
+                x: cloneBlockLocation.x + offsetLocation.x, 
+                y: cloneBlockLocation.y + offsetLocation.y, 
+                z: cloneBlockLocation.z + offsetLocation.z}
             let offsetBlock = playerInstance.dimension.getBlock(forBlockLocation)
-            undoAdd(offsetBlock, playerInstance.cBL.length, playerInstance, i)
+            blockPermutations[i] = offsetBlock.permutation;
+            blockLocations[i] = offsetBlock.location;
             playerInstance.dimension.fillBlocks(forBlockLocation, forBlockLocation, playerInstance.cloneBlockArray[i]);
-            i++;
-        })
-        playerInstance.index++;
+            
+        }  
+        blockPermutations.length = i
+        blockLocations.length = i
+        affectedBlocks = i
+        undoSave({affectedBlocks: affectedBlocks, blocks: blockPermutations, locations: blockLocations}, playerInstance)
         return "SHIT"
     });
-    
 };
-
+addCommand({chatFunction: (chatEvent) => {paste(getPlayerObject(chatEvent.sender))}, commandName: "paste", directory: "worldEdit", commandPrefix: ";"})
 /**
  * @returns {String}
  * @param {PlayerClass} playerInstance 
@@ -140,7 +149,7 @@ function set(playerInstance: PlayerClass, message: String){
             y: Math.max(bL1.y, bL2.y),
             z: Math.max(bL1.z, bL2.z)};
         
-        const affectedBlocks = lenghtX * lenghtY * lenghtZ;
+        let affectedBlocks = lenghtX * lenghtY * lenghtZ;
         var blockPermutations = new Array(affectedBlocks)
         var blockLocations = new Array(affectedBlocks)   
         if (playerInstance) { 
@@ -180,11 +189,10 @@ function set(playerInstance: PlayerClass, message: String){
                             blockLocations[counter] = offsetBlock.location;
                             console.warn(`saved under ${offsetBlock.typeId} at ${playerInstance.index} ${counter}`)
                             counter++;
-                            playerInstance.dimension.fillBlocks(offsetBlock, offsetBlock, BlockTypes.get("minecraft:" + element.split("%")[1]));                    
+                            playerInstance.dimension.fillBlocks(offsetBlock, offsetBlock, BlockTypes.get("minecraft:" + element.split("%")[1]));     
+                            return;               
                         }
 
-
-                        counter++;
                     });
                     
     
@@ -195,10 +203,11 @@ function set(playerInstance: PlayerClass, message: String){
         }
         blockPermutations.length = counter
         blockLocations.length = counter
+        affectedBlocks = counter
         undoSave({affectedBlocks: affectedBlocks, blocks: blockPermutations, locations: blockLocations}, playerInstance)
     });
     
-};
+}
 
 
 /**

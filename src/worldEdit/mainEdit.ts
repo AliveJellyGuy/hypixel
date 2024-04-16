@@ -39,7 +39,9 @@ export class PlayerClass {
     /**The root of the cloned blocks */
     cBR: Vector3;
     cloneBlockArray: any[];
-    cBL: any[];
+    /**The cloned block locations */
+    cBL: Vector3[];
+    /**The current undo index */
     index: number;
     tSLT: number;
 
