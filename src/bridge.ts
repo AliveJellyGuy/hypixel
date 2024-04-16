@@ -2,6 +2,7 @@ import { Player, world, system, ItemStack, Component, EnchantmentTypes, Vector3,
 import { normalize } from "path/win32";
 
 const redKitChestLocation = {x: 3, y: 57, z: -33} as Vector3;
+const blueKitChestLocation = {x: 7, y: 57, z: -33} as Vector3;
 
 const players = world.getAllPlayers();
 
@@ -67,9 +68,11 @@ class Kit{
 }
 
 let red_kit=new Kit(redKitChestLocation)
+let blue_kit=new Kit(blueKitChestLocation)
 
 for(const player of players){
     red_kit.giveplayerKit(player)
-}
+    blue_kit.giveplayerKit(player)
+}   
 
 

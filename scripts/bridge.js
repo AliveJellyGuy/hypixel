@@ -1,5 +1,6 @@
 import { world, EquipmentSlot } from "@minecraft/server";
 const redKitChestLocation = { x: 3, y: 57, z: -33 };
+const blueKitChestLocation = { x: 7, y: 57, z: -33 };
 const players = world.getAllPlayers();
 const armorSlot = new Map()
     .set("chestplate", EquipmentSlot.Chest)
@@ -50,6 +51,8 @@ class Kit {
     }
 }
 let red_kit = new Kit(redKitChestLocation);
+let blue_kit = new Kit(blueKitChestLocation);
 for (const player of players) {
     red_kit.giveplayerKit(player);
+    blue_kit.giveplayerKit(player);
 }
