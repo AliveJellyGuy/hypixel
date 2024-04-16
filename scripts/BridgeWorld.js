@@ -7,13 +7,20 @@ world.afterEvents.playerBreakBlock.subscribe((eventdata) => {
     if (player.getGameMode() == GameMode.creative) {
         return;
     }
-    const Breakable = new Set();
+    const breakable = new Set();
     const playerTags = player.getTags();
     for (const playerTag of playerTags) {
         if (breakAllowed.has(playerTag)) {
             for (const blockName of breakAllowed.get(playerTag)) {
-                Breakable.add(blockName);
+                if (!blockName.includes(":")) {
+                    breakable.add(`minecraft:${blockName}`);
+                    continue;
+                }
+                breakable.add(blockName);
             }
         }
+    }
+    if (!breakable.has(eventdata.brokenBlockPermutation.type.id)) {
+        player.dimension.fillBlocks(eventdata.block.location, eventdata.block.location, eventdata.brokenBlockPermutation);
     }
 });

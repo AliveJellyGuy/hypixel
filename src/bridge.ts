@@ -67,12 +67,17 @@ class Kit{
     }
 }
 
-let red_kit=new Kit(redKitChestLocation)
-let blue_kit=new Kit(blueKitChestLocation)
+try{
+    let red_kit=new Kit(redKitChestLocation)
+    let blue_kit=new Kit(blueKitChestLocation)
 
-for(const player of players){
-    red_kit.giveplayerKit(player)
-    blue_kit.giveplayerKit(player)
-}   
+    for(const player of players){
+        red_kit.giveplayerKit(player)
+        blue_kit.giveplayerKit(player)
+    }   
+}
+catch{
+    console.log("Cant find chest")
+}
 
 
