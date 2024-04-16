@@ -240,8 +240,14 @@ export const undoSave = (undoBlocks: UndoBlocks, playerInstance: PlayerClass) : 
         const playerInstance = activePlayers.get(player.name);
         const block = eventData.block;
         const blockRe = eventData.brokenBlockPermutation
-    
-    
+        let inventory = player.getComponent("inventory");
+        if(inventory.container.getItem(player.selectedSlot).nameTag == "§dWand")
+        {
+            player.addTag("worldEdit")
+        }
+        else{
+            player.removeTag("worldEdit")
+        }
         if (player.hasTag("admin") && player.hasTag("worldEdit")) {
     
             playerInstance.bL1 = block.location;
@@ -490,15 +496,9 @@ system.runInterval(()=>{
             /**
              * @type {EntityInventoryComponent}
              */
-            let inventory = player.getComponent("inventory");
+            
             //world.sendMessage(inventory.container.getItem(player.selectedSlot).nameTag)
-            if(inventory.container.getItem(player.selectedSlot).nameTag == "§dWand")
-            {
-                player.addTag("worldEdit")
-            }
-            else{
-                player.removeTag("worldEdit")
-            }
+            
         })
     }
     catch{
