@@ -1,7 +1,7 @@
-import { world, MinecraftBlockTypes } from "@minecraft/server";
+import { world, BlockTypes } from "@minecraft/server";
 export { clone, paste };
 import { undoBlocks, undoCounter, undoAdd, undoSave, bL1, bL2, undoBlocksType, deleteRow } from "./mainFake.js";
-var allBlocks = MinecraftBlockTypes.getAllBlockTypes();
+var allBlocks = BlockTypes.getAll();
 var cloneBlocks = [];
 var cloneBlocksRoot;
 function clone() {
