@@ -71,7 +71,7 @@ function copy(playerInstance: PlayerClass){
                     playerInstance.cloneBlockArray[i] = offsetBlock.permutation;
                     playerInstance.cBL[i] = offsetBlock.location;
                       
-                    console.warn(`§dsaved under ${playerInstance.cloneBlockArray[i].type.id} at ${playerInstance.index} ${i}`)
+                    console.warn(`§dsaved under ${playerInstance.cloneBlockArray[i].type.id} at ${i}`)
 
                     i++;
 
@@ -113,7 +113,8 @@ const paste = (playerInstance: PlayerClass) => {
                 z: cloneBlockLocation.z + offsetLocation.z}
             let offsetBlock = playerInstance.dimension.getBlock(forBlockLocation)
             blockPermutations[i] = offsetBlock.permutation;
-            blockLocations[i] = offsetBlock.location;
+            blockLocations[i] = offsetBlock.location; 
+            console.warn(`saved under ${offsetBlock.typeId} at ${playerInstance.index} ${i}`)
             playerInstance.dimension.fillBlocks(forBlockLocation, forBlockLocation, playerInstance.cloneBlockArray[i]);
             
         }  
@@ -124,7 +125,7 @@ const paste = (playerInstance: PlayerClass) => {
         return "SHIT"
     });
 };
-addCommand({chatFunction: (chatEvent) => {paste(getPlayerObject(chatEvent.sender))}, commandName: "paste", directory: "worldEdit", commandPrefix: ";"})
+//addCommand({chatFunction: (chatEvent) => {paste(getPlayerObject(chatEvent.sender))}, commandName: "paste", directory: "worldEdit", commandPrefix: ";"})
 /**
  * @returns {String}
  * @param {PlayerClass} playerInstance 

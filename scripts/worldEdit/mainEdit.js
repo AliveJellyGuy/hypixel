@@ -112,6 +112,7 @@ function undoAdd(block : Block, affectedBlocks: number, playerInstance: PlayerCl
 export const undoSave = (undoBlocks, playerInstance) => {
     playerInstance.blockArray[playerInstance.index] = undoBlocks;
     playerInstance.index += 1;
+    world.sendMessage("Succes");
     return;
 };
 //SET POS

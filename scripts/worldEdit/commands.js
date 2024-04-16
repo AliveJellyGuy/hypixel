@@ -1,6 +1,5 @@
 import { world, system, BlockTypes } from "@minecraft/server";
-import { getPlayerObject, undoSave } from "./mainEdit";
-import { addCommand } from "staticScripts/commandFunctions";
+import { undoSave } from "./mainEdit";
 export { set, undo, redo, copy, paste };
 /**
  *
@@ -52,7 +51,7 @@ function copy(playerInstance) {
                         z: blockLocation.z - zOffset });
                     playerInstance.cloneBlockArray[i] = offsetBlock.permutation;
                     playerInstance.cBL[i] = offsetBlock.location;
-                    console.warn(`§dsaved under ${playerInstance.cloneBlockArray[i].type.id} at ${playerInstance.index} ${i}`);
+                    console.warn(`§dsaved under ${playerInstance.cloneBlockArray[i].type.id} at ${i}`);
                     i++;
                 }
             }
@@ -87,6 +86,7 @@ const paste = (playerInstance) => {
             let offsetBlock = playerInstance.dimension.getBlock(forBlockLocation);
             blockPermutations[i] = offsetBlock.permutation;
             blockLocations[i] = offsetBlock.location;
+            console.warn(`saved under ${offsetBlock.typeId} at ${playerInstance.index} ${i}`);
             playerInstance.dimension.fillBlocks(forBlockLocation, forBlockLocation, playerInstance.cloneBlockArray[i]);
         }
         blockPermutations.length = i;
@@ -96,7 +96,7 @@ const paste = (playerInstance) => {
         return "SHIT";
     });
 };
-addCommand({ chatFunction: (chatEvent) => { paste(getPlayerObject(chatEvent.sender)); }, commandName: "paste", directory: "worldEdit", commandPrefix: ";" });
+//addCommand({chatFunction: (chatEvent) => {paste(getPlayerObject(chatEvent.sender))}, commandName: "paste", directory: "worldEdit", commandPrefix: ";"})
 /**
  * @returns {String}
  * @param {PlayerClass} playerInstance
