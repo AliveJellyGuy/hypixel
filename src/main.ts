@@ -1,7 +1,7 @@
 import { Player, world, system } from "@minecraft/server";
 import "./betterChat";
-import "./bridge";
-import "./BridgeWorld"
+import "./Bridge/bridge";
+import "./Bridge/BridgeWorld"
 import "./worldEdit/mainEdit";
 import "./hypixelCosmetic/particleEffects"
 
