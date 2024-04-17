@@ -1,9 +1,10 @@
 import { world, system } from "@minecraft/server";
 import "./betterChat";
-import "./bridge";
-import "./BridgeWorld";
+import "./Bridge/bridge";
+import "./Bridge/BridgeWorld";
 import "./worldEdit/mainEdit";
 import "./hypixelCosmetic/particleEffects";
+import "./npc/npcInteract";
 system.runInterval(() => {
     const players = world.getAllPlayers();
     for (const player of players) {
