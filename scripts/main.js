@@ -3,6 +3,7 @@ import "./betterChat";
 import "./bridge";
 import "./BridgeWorld";
 import "./worldEdit/mainEdit";
+import "./hypixelCosmetic/particleEffects";
 system.runInterval(() => {
     const players = world.getAllPlayers();
     for (const player of players) {

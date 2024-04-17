@@ -40,12 +40,8 @@ class DrawFunctions {
             particleLocation = VectorFunctions.addVector(particleLocation, VectorFunctions.multiplyVector(normalisedVector, stepSize));
         }
     }
-    static drawSphere(steps, size, centerLocation, particleName, molangVars) {
-        if (typeof particleName != "string") {
-            particleName = "minecraft:blue_flame_particle";
-        }
+    static drawSphere(steps, size, centerLocation, particleName = "minecraft:blue_flame_particle", molangVars) {
         // world.sendMessage("drawing sphere")
-        particleName = "minecraft:blue_flame_particle";
         const stepSize = 360 / steps;
         const addVector = { x: size, y: 0, z: 0 };
         for (let i = 0; i < steps; i++) {
