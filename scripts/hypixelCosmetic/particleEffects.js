@@ -23,7 +23,7 @@ const footstepSoundCircle = (particleFunctionParamters) => {
             DrawFunctions.drawSphere(circleResolution, circleRadius / i, location);
         }
     };
-    console.warn(`${system.currentTick % Math.floor(frequency / playerSpeed)}`);
+    //console.warn(`${system.currentTick % Math.floor(frequency / playerSpeed)}`)
     if (system.currentTick % Math.floor(frequency / playerSpeed) == 0) {
         circleParticle();
     }
