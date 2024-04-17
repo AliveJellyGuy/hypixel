@@ -3,7 +3,7 @@ import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { DrawFunctions } from "staticScripts/drawFunctions";
 import { TickFunctions } from "staticScripts/tickFunctions";
 import { VectorFunctions } from "staticScripts/vectorFunctions";
-const playerParticles = new Map();
+export const playerParticles = new Map();
 TickFunctions.addFunction(() => {
     for (const [key, value] of playerParticles) {
         value({ player: key });
@@ -24,7 +24,7 @@ const footstepSoundCircle = (particleFunctionParamters) => {
         }
     };
     //console.warn(`${system.currentTick % Math.floor(frequency / playerSpeed)}`)
-    if (system.currentTick % Math.floor(frequency / playerSpeed) == 0) {
+    if (system.currentTick % Math.floor(frequency / playerSpeed) == 0 && player.getVelocity().y == 0) {
         circleParticle();
     }
 };

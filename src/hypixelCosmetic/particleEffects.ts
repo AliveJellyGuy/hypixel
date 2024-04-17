@@ -8,7 +8,9 @@ interface IParticleFunctionParameters{
     player: Player
 }
 
-const playerParticles : Map<Player, (params: IParticleFunctionParameters) => void> = new Map();
+export const playerParticles : Map<Player, (params: IParticleFunctionParameters) => void> = new Map();
+
+
 
 TickFunctions.addFunction(() => {
     for (const [key, value] of playerParticles) {
@@ -31,7 +33,7 @@ const footstepSoundCircle = (particleFunctionParamters: IParticleFunctionParamet
         }
     }
     //console.warn(`${system.currentTick % Math.floor(frequency / playerSpeed)}`)
-    if(system.currentTick % Math.floor(frequency / playerSpeed) == 0){
+    if(system.currentTick % Math.floor(frequency / playerSpeed) == 0 && player.getVelocity().y == 0){
         circleParticle();
     }
     
