@@ -1,5 +1,5 @@
-import { Player, world } from "@minecraft/server";
-import { ECosmeticType, ICosmetic, ICosmeticFunctionParameters, cosmeticList, getCosmeticById } from "./cosmeticList";
+import { ChatSendBeforeEvent, Player, world } from "@minecraft/server";
+import { CosmeticId, ECosmeticType, ICosmetic, ICosmeticFunctionParameters, cosmeticList, getCosmeticById } from "./cosmeticList";
 import { TickFunctions } from "staticScripts/tickFunctions";
 import { JumpFunctions } from "playerMovement/jumpFunctions";
 import { GlobalVars } from "globalVars";
@@ -23,7 +23,6 @@ class PlayerCosmetic {
 
         TickFunctions.addFunction(() => this.tick(this.player), 1);
         JumpFunctions.addPressedJumpFunction(player => this.jumpParticle(player));
-        addCommand({commandName: "cosmetic",chatFunction: ((event) => {this.cosmeticTypeHud()}), directory: "Cosmetics", commandPrefix: ";;"})
     }
 
     tick = (player : Player) => {
@@ -57,6 +56,10 @@ class PlayerCosmetic {
             if(cosmeticList[i].cosmeticType != type){
                 continue;
             }
+            console.warn(this.player.getDynamicProperty(`${cosmeticList[i].cosmeticId}`) as boolean);
+            if(!this.player.getDynamicProperty(`${cosmeticList[i].cosmeticId}`) as boolean){
+                continue;
+            }
             cosmetics.push(cosmeticList[i].cosmeticId);
             cosmeticHud.button(cosmeticList[i].cosmeticId);
         }
@@ -77,17 +80,73 @@ class PlayerCosmetic {
         });
     }
 
+    setCosmetic = (cosmeticId : keyof CosmeticId |string, cosmeticSlot: ECosmeticType) => {
+        this.cosmetic[cosmeticSlot] = getCosmeticById(cosmeticId);
+        this.player.setDynamicProperty(`saved${ECosmeticType[cosmeticSlot]}`, cosmeticSlot);
+        console.warn(`Saved under key: saved${ECosmeticType[cosmeticSlot]} value: ${cosmeticSlot}`);
+    }
+
+    unlockCosmetic = (cosmeticId : keyof CosmeticId | string) => {
+        this.player.setDynamicProperty(`${cosmeticId}`, true);
+    }
+
+    lockCosmetic = (cosmeticId : keyof CosmeticId | string) => {
+        this.player.setDynamicProperty(`${cosmeticId}`, false);
+    }
+
+    unlockAllCosmetics = () => {
+        for(const cosmetic of cosmeticList){
+            this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, true);
+        }
+    }
+
+    cosmeticShop = () => {
+        const cosmeticShop = new ActionFormData();
+        cosmeticShop.title("Cosmetics");
+        cosmeticShop.body("Select a cosmetic to buy: \t§a" + this.player.winsCurrency);
+        for(const cosmetic of cosmeticList){
+            if(this.player.getDynamicProperty(`${cosmetic.cosmeticId}`) as boolean){
+                continue;
+            }
+            if(this.player.winsCurrency < cosmetic.cost){
+                cosmeticShop.button(`${cosmetic.cosmeticId} \n§aCost: ${cosmetic.cost}`);
+            } 
+            else {
+                cosmeticShop.button(`${cosmetic.cosmeticId} \n§cCost: ${cosmetic.cost}`);    
+            }
+        }
+        showHUD(this.player, cosmeticShop).then((response) => {
+            if(response.canceled){
+                return;
+            }
+            
+        })
+    }
+}
+
+
+
+addCommand({commandName: "cosmetic",chatFunction: ((event) => {equipCosmetic(event)}), directory: "Cosmetics", commandPrefix: ";;"})
+addCommand({commandName: "shop",chatFunction: ((event) => {playerCosmeticeMap.get(event.sender).cosmeticShop()}), directory: "Cosmetics", commandPrefix: ";;"})
+const equipCosmetic = (eventData: ChatSendBeforeEvent) => {
+    playerCosmeticeMap.get(eventData.sender).cosmeticTypeHud()
+}
+
+const buyCosmetic = (eventData: ChatSendBeforeEvent) => {
+   playerCosmeticeMap.get(eventData.sender).cosmeticShop()
 }
 
 const playerCosmeticeMap = new Map<Player, PlayerCosmetic>();
 
 for(const player of GlobalVars.players){
     playerCosmeticeMap.set(player, new PlayerCosmetic(player))
+    playerCosmeticeMap.get(player).unlockCosmetic("empty");
 }
 
 world.afterEvents.playerSpawn.subscribe((eventData) => {
     const {player} = eventData;
     if(!playerCosmeticeMap.has(player)){
         playerCosmeticeMap.set(player, new PlayerCosmetic(player))
+        playerCosmeticeMap.get(player).unlockCosmetic("empty");
     }
 })

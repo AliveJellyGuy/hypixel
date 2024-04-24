@@ -39,6 +39,10 @@ class PlayerCosmetic {
                 if (cosmeticList[i].cosmeticType != type) {
                     continue;
                 }
+                console.warn(this.player.getDynamicProperty(`${cosmeticList[i].cosmeticId}`));
+                if (!this.player.getDynamicProperty(`${cosmeticList[i].cosmeticId}`)) {
+                    continue;
+                }
                 cosmetics.push(cosmeticList[i].cosmeticId);
                 cosmeticHud.button(cosmeticList[i].cosmeticId);
             }
@@ -57,6 +61,43 @@ class PlayerCosmetic {
                 console.warn(`Saved under key: saved${ECosmeticType[type]} value: ${cosmetics[response.selection]}`);
             });
         };
+        this.setCosmetic = (cosmeticId, cosmeticSlot) => {
+            this.cosmetic[cosmeticSlot] = getCosmeticById(cosmeticId);
+            this.player.setDynamicProperty(`saved${ECosmeticType[cosmeticSlot]}`, cosmeticSlot);
+            console.warn(`Saved under key: saved${ECosmeticType[cosmeticSlot]} value: ${cosmeticSlot}`);
+        };
+        this.unlockCosmetic = (cosmeticId) => {
+            this.player.setDynamicProperty(`${cosmeticId}`, true);
+        };
+        this.lockCosmetic = (cosmeticId) => {
+            this.player.setDynamicProperty(`${cosmeticId}`, false);
+        };
+        this.unlockAllCosmetics = () => {
+            for (const cosmetic of cosmeticList) {
+                this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, true);
+            }
+        };
+        this.cosmeticShop = () => {
+            const cosmeticShop = new ActionFormData();
+            cosmeticShop.title("Cosmetics");
+            cosmeticShop.body("Select a cosmetic to buy: \t§a" + this.player.winsCurrency);
+            for (const cosmetic of cosmeticList) {
+                if (this.player.getDynamicProperty(`${cosmetic.cosmeticId}`)) {
+                    continue;
+                }
+                if (this.player.winsCurrency < cosmetic.cost) {
+                    cosmeticShop.button(`${cosmetic.cosmeticId} \n§aCost: ${cosmetic.cost}`);
+                }
+                else {
+                    cosmeticShop.button(`${cosmetic.cosmeticId} \n§cCost: ${cosmetic.cost}`);
+                }
+            }
+            showHUD(this.player, cosmeticShop).then((response) => {
+                if (response.canceled) {
+                    return;
+                }
+            });
+        };
         this.player = player;
         for (const key of EnumKeys) {
             this.cosmetic[ECosmeticType[key]] = getCosmeticById("empty");
@@ -65,16 +106,25 @@ class PlayerCosmetic {
         //This is only debug prop should remove this also idk waht happens if nothing is defined
         TickFunctions.addFunction(() => this.tick(this.player), 1);
         JumpFunctions.addPressedJumpFunction(player => this.jumpParticle(player));
-        addCommand({ commandName: "cosmetic", chatFunction: ((event) => { this.cosmeticTypeHud(); }), directory: "Cosmetics", commandPrefix: ";;" });
     }
 }
+addCommand({ commandName: "cosmetic", chatFunction: ((event) => { equipCosmetic(event); }), directory: "Cosmetics", commandPrefix: ";;" });
+addCommand({ commandName: "shop", chatFunction: ((event) => { playerCosmeticeMap.get(event.sender).cosmeticShop(); }), directory: "Cosmetics", commandPrefix: ";;" });
+const equipCosmetic = (eventData) => {
+    playerCosmeticeMap.get(eventData.sender).cosmeticTypeHud();
+};
+const buyCosmetic = (eventData) => {
+    playerCosmeticeMap.get(eventData.sender).cosmeticShop();
+};
 const playerCosmeticeMap = new Map();
 for (const player of GlobalVars.players) {
     playerCosmeticeMap.set(player, new PlayerCosmetic(player));
+    playerCosmeticeMap.get(player).unlockCosmetic("empty");
 }
 world.afterEvents.playerSpawn.subscribe((eventData) => {
     const { player } = eventData;
     if (!playerCosmeticeMap.has(player)) {
         playerCosmeticeMap.set(player, new PlayerCosmetic(player));
+        playerCosmeticeMap.get(player).unlockCosmetic("empty");
     }
 });

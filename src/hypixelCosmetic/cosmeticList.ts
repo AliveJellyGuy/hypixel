@@ -13,13 +13,14 @@ export enum ECosmeticType {
 export interface ICosmetic {
     cosmeticType: ECosmeticType,
     cosmeticId: string,
-    cosmeticFunction: (params: ICosmeticFunctionParameters) => void
+    cosmeticFunction: (params: ICosmeticFunctionParameters) => void,
+    cost: number
 }
 export const cosmeticList: ICosmetic[] = [
-    { cosmeticType: ECosmeticType.NormalParticle, cosmeticId: "empty", cosmeticFunction: () => {} },
-    { cosmeticType: ECosmeticType.NormalParticle, cosmeticId: "footstepSoundCircle", cosmeticFunction: footstepSoundCircle },
+    { cosmeticType: ECosmeticType.NormalParticle, cosmeticId: "empty", cosmeticFunction: () => {}, cost: 0 },
+    { cosmeticType: ECosmeticType.NormalParticle, cosmeticId: "footstepSoundCircle", cosmeticFunction: footstepSoundCircle, cost: 3 },
     // Jump particles
-    { cosmeticType: ECosmeticType.JumpParticle, cosmeticId: "jumpPoofEffect", cosmeticFunction: jumpPoofEffect }
+    { cosmeticType: ECosmeticType.JumpParticle, cosmeticId: "jumpPoofEffect", cosmeticFunction: jumpPoofEffect, cost: 3 }
 ];
 
 export type CosmeticId = {
