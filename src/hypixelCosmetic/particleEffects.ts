@@ -5,7 +5,9 @@ import { TickFunctions } from "staticScripts/tickFunctions";
 import { VectorFunctions } from "staticScripts/vectorFunctions";
 import { ICosmeticFunctionParameters } from "./cosmeticList";
 
-
+export const emptyParticle = (particleFunctionParamters: ICosmeticFunctionParameters) => {
+    
+}
 export const footstepSoundCircle = (particleFunctionParamters: ICosmeticFunctionParameters) => {
     const player = particleFunctionParamters.player;
     const playerSpeed = VectorFunctions.vectorLengthXZ(player.getVelocity());
@@ -30,13 +32,12 @@ export const footstepSoundCircle = (particleFunctionParamters: ICosmeticFunction
 export const jumpPoofEffect = (particleFunctionParamters: ICosmeticFunctionParameters) => {
     const player = particleFunctionParamters.player;
     const location = player.location;
-    const height = 1;
-    const radius = 0.5;
     const jumpPoofParticle = async () => {
         system.run(async () => {
-            player.playSound("note.iron_xylophone")
+            //player.playSound("note.iron_xylophone")
         })
         player.dimension.spawnParticle("minecraft:totem_particle", location)
     }
     jumpPoofParticle();
+    
 }

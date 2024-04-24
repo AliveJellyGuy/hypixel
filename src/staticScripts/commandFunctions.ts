@@ -65,13 +65,18 @@ world.beforeEvents.chatSend.subscribe((event) => {
     }
     return;
   }
+
+
     // Iterate through registered commands
   for (const cmd of commandValues) {
     const commandString = `${cmd.commandPrefix}${cmd.commandName}`;
 
     // Check if the message starts with the command string
-    if (!event.message.startsWith(commandString)) {
+    if (event.message != commandString) {
       // Check player tags
+      if(commandString.includes(event.message)){
+        event.sender.sendMessage(`Did you mean: §3${commandString}`)
+      }
       continue;
     }
     if(!cmd.permissions){

@@ -2,6 +2,8 @@ import { system } from "@minecraft/server";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { DrawFunctions } from "staticScripts/drawFunctions";
 import { VectorFunctions } from "staticScripts/vectorFunctions";
+export const emptyParticle = (particleFunctionParamters) => {
+};
 export const footstepSoundCircle = (particleFunctionParamters) => {
     const player = particleFunctionParamters.player;
     const playerSpeed = VectorFunctions.vectorLengthXZ(player.getVelocity());
@@ -24,11 +26,9 @@ export const footstepSoundCircle = (particleFunctionParamters) => {
 export const jumpPoofEffect = (particleFunctionParamters) => {
     const player = particleFunctionParamters.player;
     const location = player.location;
-    const height = 1;
-    const radius = 0.5;
     const jumpPoofParticle = async () => {
         system.run(async () => {
-            player.playSound("note.iron_xylophone");
+            //player.playSound("note.iron_xylophone")
         });
         player.dimension.spawnParticle("minecraft:totem_particle", location);
     };
