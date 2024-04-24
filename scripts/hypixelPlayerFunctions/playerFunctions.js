@@ -1,18 +1,15 @@
 import { Player } from "@minecraft/server";
+// player-extensions.ts
 Object.defineProperties(Player.prototype, {
     winsCurrency: {
-        /**
-         * The amount of win tokens the player has.
-         * @returns {number}
-         */
-        get() {
-            if (this.getDynamicProperty("winsCurrency") == undefined) {
+        get: function () {
+            if (this.getDynamicProperty("winsCurrency") === undefined) {
                 this.setDynamicProperty("winsCurrency", 0);
             }
             return this.getDynamicProperty("winsCurrency");
         },
-        set(v) {
-            this.setDynamicProperty("winsCurrency", v);
-        },
+        set: function (value) {
+            this.setDynamicProperty("winsCurrency", value);
+        }
     }
 });
