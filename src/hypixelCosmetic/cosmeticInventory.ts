@@ -6,7 +6,8 @@ import { GlobalVars } from "globalVars";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { isNumber } from "util";
-import "../hypixelPlayerFunctions/playerFunctions";
+import "../hypixelFunctions/playerFunctions";
+import { Interface } from "readline";
 
 
 const EnumKeys = Object.keys(ECosmeticType).filter(key =>  isNaN(Number(key)));
@@ -105,13 +106,14 @@ class PlayerCosmetic {
     cosmeticShop = () => {
         const cosmeticShop = new ActionFormData();
         cosmeticShop.title("Cosmetics");
-        console.warn(this.player.winsCurrency);
-        cosmeticShop.body("Select a cosmetic to buy: §a" + this.player.winsCurrency);
+        
+        const playerGold = this.player.getHypixelValue("winsCurrency");
+        cosmeticShop.body("Select a cosmetic to buy: §a" + playerGold);
         for(const cosmetic of cosmeticList){
             if(this.player.getDynamicProperty(`${cosmetic.cosmeticId}`) as boolean){
                 continue;
             }
-            if(this.player.winsCurrency >= cosmetic.cost){
+            if(this.player.getHypixelValue("winsCurrency") >= cosmetic.cost){
                 cosmeticShop.button(`${cosmetic.cosmeticId} \n§aCost: ${cosmetic.cost}`);
             } 
             else {

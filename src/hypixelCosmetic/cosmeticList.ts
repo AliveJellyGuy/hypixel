@@ -35,4 +35,5 @@ export const getCosmeticById = (id: keyof CosmeticId | string): ICosmetic | unde
     cosmeticList.find(cosmetic => cosmetic.cosmeticId === id);
 
 
+
  

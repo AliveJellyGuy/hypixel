@@ -6,6 +6,7 @@ import "./worldEdit/mainEdit";
 import "./hypixelCosmetic/particleEffects"
 import "./hypixelCosmetic/cosmeticInventory"
 import "./npc/npcInteract"
+import "./hypixelFunctions/adminFunctions"
 
 system.runInterval(()=> {
     const players = world.getAllPlayers()
