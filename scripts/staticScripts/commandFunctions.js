@@ -26,7 +26,12 @@ world.beforeEvents.chatSend.subscribe((event) => {
         if (event.message != commandString) {
             // Check player tags
             if (commandString.includes(event.message)) {
-                event.sender.sendMessage(`Did you mean: §3${commandString}`);
+                if (!cmd.permissions) {
+                    event.sender.sendMessage(`Did you mean: §3${commandString}`);
+                }
+                else if (cmd.permissions.some((tag) => sender.hasTag(tag)) || sender.isOp()) {
+                    event.sender.sendMessage(`Did you mean: §3${commandString}`);
+                }
             }
             continue;
         }
@@ -34,7 +39,7 @@ world.beforeEvents.chatSend.subscribe((event) => {
             system.run(async () => { cmd.chatFunction(event); });
             break;
         }
-        if (cmd.permissions.some((tag) => sender.hasTag(tag))) {
+        if (cmd.permissions.some((tag) => sender.hasTag(tag)) || sender.isOp()) {
             // Execute the command function
             system.run(async () => { cmd.chatFunction(event); });
             break;
@@ -93,6 +98,7 @@ async function commandHud(player, chatSendEvent, parentPath) {
         }
     });
 }
+addCommand({ commandName: "commands", chatFunction: ((event) => { commandHud(event.sender, event, ""); }), directory: "twla/lmao", commandPrefix: ";;" });
 world.beforeEvents.chatSend.subscribe((event) => {
     if (event.message.startsWith(";;commands")) {
         commandHud(event.sender, event, "/");
