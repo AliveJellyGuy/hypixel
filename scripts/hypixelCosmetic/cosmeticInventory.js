@@ -78,16 +78,15 @@ class PlayerCosmetic {
             for (const cosmetic of cosmeticList) {
                 this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, true);
             }
-            for (const key of EnumKeys) {
-                this.player.setDynamicProperty(`saved${key}`, "empty");
-                this.cosmetic[ECosmeticType[key]] = getCosmeticById("empty");
-            }
         };
         this.lockAllCosmetics = () => {
             for (const cosmetic of cosmeticList) {
                 this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, false);
             }
-            this.player.setDynamicProperty(`saved${ECosmeticType.NormalParticle}`, "empty");
+            for (const key of EnumKeys) {
+                this.player.setDynamicProperty(`saved${key}`, "empty");
+                this.cosmetic[ECosmeticType[key]] = getCosmeticById("empty");
+            }
         };
         this.cosmeticShop = () => {
             const cosmeticShop = new ActionFormData();
