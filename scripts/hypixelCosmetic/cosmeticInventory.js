@@ -72,11 +72,22 @@ class PlayerCosmetic {
         };
         this.lockCosmetic = (cosmeticId) => {
             this.player.setDynamicProperty(`${cosmeticId}`, false);
+            //Remove from saved and set the players cosmetic to empty if it is locked
         };
         this.unlockAllCosmetics = () => {
             for (const cosmetic of cosmeticList) {
                 this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, true);
             }
+            for (const key of EnumKeys) {
+                this.player.setDynamicProperty(`saved${key}`, "empty");
+                this.cosmetic[ECosmeticType[key]] = getCosmeticById("empty");
+            }
+        };
+        this.lockAllCosmetics = () => {
+            for (const cosmetic of cosmeticList) {
+                this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, false);
+            }
+            this.player.setDynamicProperty(`saved${ECosmeticType.NormalParticle}`, "empty");
         };
         this.cosmeticShop = () => {
             const cosmeticShop = new ActionFormData();
@@ -103,7 +114,8 @@ class PlayerCosmetic {
         this.player = player;
         for (const key of EnumKeys) {
             this.cosmetic[ECosmeticType[key]] = getCosmeticById("empty");
-            this.cosmetic[ECosmeticType[key]] = getCosmeticById(player.getDynamicProperty(`saved${key}`));
+            if (player.getDynamicProperty(`saved${key}`) !== undefined)
+                this.cosmetic[ECosmeticType[key]] = getCosmeticById(player.getDynamicProperty(`saved${key}`));
         }
         //This is only debug prop should remove this also idk waht happens if nothing is defined
         TickFunctions.addFunction(() => this.tick(this.player), 1);
@@ -118,7 +130,19 @@ const equipCosmetic = (eventData) => {
 const buyCosmetic = (eventData) => {
     playerCosmeticeMap.get(eventData.sender).cosmeticShop();
 };
-const playerCosmeticeMap = new Map();
+export const unlockCosmetic = (player, cosmeticId) => {
+    playerCosmeticeMap.get(player).unlockCosmetic(cosmeticId);
+};
+export const unlockAllCosmetics = (player) => {
+    playerCosmeticeMap.get(player).unlockAllCosmetics();
+};
+export const lockCosmetic = (player, cosmeticId) => {
+    playerCosmeticeMap.get(player).lockCosmetic(cosmeticId);
+};
+export const lockAllCosmetics = (player) => {
+    playerCosmeticeMap.get(player).lockAllCosmetics();
+};
+export const playerCosmeticeMap = new Map();
 for (const player of GlobalVars.players) {
     playerCosmeticeMap.set(player, new PlayerCosmetic(player));
     playerCosmeticeMap.get(player).unlockCosmetic("empty");

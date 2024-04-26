@@ -20,6 +20,7 @@ class PlayerCosmetic {
         this.player = player;
         for(const key of EnumKeys){
             this.cosmetic[ECosmeticType[key]] = getCosmeticById("empty")
+            if(player.getDynamicProperty(`saved${key}`) !== undefined)
             this.cosmetic[ECosmeticType[key]] = getCosmeticById(player.getDynamicProperty(`saved${key}`) as string)
         }
         //This is only debug prop should remove this also idk waht happens if nothing is defined
@@ -95,12 +96,24 @@ class PlayerCosmetic {
 
     lockCosmetic = (cosmeticId : keyof CosmeticId | string) => {
         this.player.setDynamicProperty(`${cosmeticId}`, false);
+        //Remove from saved and set the players cosmetic to empty if it is locked
     }
 
     unlockAllCosmetics = () => {
         for(const cosmetic of cosmeticList){
             this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, true);
         }
+        for(const key of EnumKeys){
+            this.player.setDynamicProperty(`saved${key}`, "empty");
+            this.cosmetic[ECosmeticType[key]] = getCosmeticById("empty");
+        }
+    }
+
+    lockAllCosmetics = () => {
+        for(const cosmetic of cosmeticList){
+            this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, false);
+        }
+        this.player.setDynamicProperty(`saved${ECosmeticType.NormalParticle}`, "empty");
     }
 
     cosmeticShop = () => {
@@ -147,6 +160,14 @@ export const unlockCosmetic = (player: Player, cosmeticId : keyof CosmeticId | s
 
 export const unlockAllCosmetics = (player: Player) => {
     playerCosmeticeMap.get(player).unlockAllCosmetics();
+}
+
+export const lockCosmetic = (player: Player, cosmeticId : keyof CosmeticId | string) => {
+    playerCosmeticeMap.get(player).lockCosmetic(cosmeticId);
+}
+
+export const lockAllCosmetics = (player: Player) => {
+    playerCosmeticeMap.get(player).lockAllCosmetics();
 }
 
 export const playerCosmeticeMap = new Map<Player, PlayerCosmetic>();

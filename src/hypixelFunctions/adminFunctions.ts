@@ -3,7 +3,7 @@ import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
 import { PlayerValueType, playerValueTypeArray } from "./playerFunctions";
 import { cosmeticList } from "hypixelCosmetic/cosmeticList";
-import { unlockAllCosmetics, unlockCosmetic } from "hypixelCosmetic/cosmeticInventory";
+import { lockAllCosmetics, lockCosmetic, unlockAllCosmetics, unlockCosmetic } from "hypixelCosmetic/cosmeticInventory";
 import { askForConfirmation } from "hud";
 
 addCommand({commandName: "admin", chatFunction: ((event) => {showAdminPanel(event.sender)}), directory: "twla/lmao", commandPrefix: "!!"})
@@ -59,6 +59,29 @@ const unlockPlayerCosmetic =(showHUDPlayer: Player, unlockPlayer: Player) => {
             return;
         } else {
             unlockCosmetic(unlockPlayer, cosmeticList[response.selection - 1].cosmeticId);
+        }
+
+    })
+}
+
+addCommand({commandName: "lock", chatFunction: ((event) => {lockPlayerCosmetic(event.sender, event.sender)}), directory: "twla/lmao", commandPrefix: "!!"})
+const lockPlayerCosmetic =(showHUDPlayer: Player, lockPlayer: Player) => {
+    const lockCosmeticsPanel = new ActionFormData();
+    lockCosmeticsPanel.title("Lock Cosmetics");
+    lockCosmeticsPanel.button("All");
+    for(const cosmetic of cosmeticList){
+        lockCosmeticsPanel.button(cosmetic.cosmeticId);
+    }
+
+    showHUD(showHUDPlayer, lockCosmeticsPanel).then((response) => {
+        if(response.canceled) {return}
+        if(response.selection === 0) {
+            if(askForConfirmation(lockPlayer, "Are you sure you want to lock all cosmetics?").then((res) => {return res})) {
+                lockAllCosmetics(lockPlayer)
+            }
+            return;
+        } else {
+            lockCosmetic(lockPlayer, cosmeticList[response.selection - 1].cosmeticId);
         }
 
     })

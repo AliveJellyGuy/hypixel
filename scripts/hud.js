@@ -2,6 +2,8 @@ import { world } from '@minecraft/server';
 import { GlobalVars } from './globalVars';
 import { TickFunctions } from './staticScripts/tickFunctions';
 import { LinkedList } from 'dataTypes/linkedList';
+import { ActionFormData } from '@minecraft/server-ui';
+import { showHUD } from 'staticScripts/commandFunctions';
 let actionbarMessages = new LinkedList();
 TickFunctions.addFunction(() => tick(), 1);
 let centerFiller = 0;
@@ -39,3 +41,21 @@ for (const player of world.getAllPlayers()) {
     world.sendMessage(`§a§lHud initalised!`);
     addActionbarMessage({ player: player, message: `§a§lHud initalised!`, lifetime: 100 });
 }
+export const askForConfirmation = (player, askMessage) => {
+    const form = new ActionFormData();
+    form.title("Confirmation");
+    form.body(askMessage);
+    form.button("Yes");
+    form.button("No");
+    return showHUD(player, form).then((res) => {
+        if (res.canceled) {
+            return false;
+        }
+        if (res.selection == 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    });
+};
