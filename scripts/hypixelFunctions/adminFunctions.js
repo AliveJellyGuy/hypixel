@@ -7,17 +7,20 @@ import { lockAllCosmetics, lockCosmetic, unlockAllCosmetics, unlockCosmetic } fr
 import { askForConfirmation } from "hud";
 var EAdminFunctionTypes;
 (function (EAdminFunctionTypes) {
-    EAdminFunctionTypes[EAdminFunctionTypes["CosmeticFunctions"] = 0] = "CosmeticFunctions";
+    EAdminFunctionTypes[EAdminFunctionTypes["PlayerValues"] = 0] = "PlayerValues";
+    EAdminFunctionTypes[EAdminFunctionTypes["CosmeticFunctions"] = 1] = "CosmeticFunctions";
 })(EAdminFunctionTypes || (EAdminFunctionTypes = {}));
 const adminFunctionsArray = [
-    { functionType: EAdminFunctionTypes.CosmeticFunctions, functionId: "lockAllCosmetics", func: () => { lockAllCosmetics(); } },
+    { functionType: EAdminFunctionTypes.PlayerValues, functionId: "setPlayerValues", func: (val) => { setPlayerValues(val); } },
+    { functionType: EAdminFunctionTypes.CosmeticFunctions, functionId: "unlockCosmetic", func: (val) => { unlockPlayerCosmetic(val); } },
+    { functionType: EAdminFunctionTypes.CosmeticFunctions, functionId: "lockCosmetic", func: (val) => { lockPlayerCosmetic(val); } },
 ];
 addCommand({ commandName: "admin", chatFunction: ((event) => { showAdminPanel(event.sender); }), directory: "twla/lmao", commandPrefix: "!!" });
 function isValidNumber(inputStr) {
     const numericRepr = parseFloat(inputStr);
     return !isNaN(numericRepr) && numericRepr.toString().length === inputStr.length;
 }
-const choosePlayer = (showHUDPlayer) => {
+const choosePlayer = async (showHUDPlayer) => {
     const choosePlayerPanel = new ActionFormData();
     choosePlayerPanel.title("Choose Player");
     const playerNameArray = [...world.getPlayers().map((player) => player.name)];
@@ -32,9 +35,21 @@ const choosePlayer = (showHUDPlayer) => {
     });
 };
 const showAdminPanel = (player) => {
-    setPlayerValues(player, player);
+    const adminPanel = new ActionFormData();
+    adminPanel.title("Admin Panel");
+    for (const adminFunction of adminFunctionsArray) {
+        adminPanel.button(adminFunction.functionId);
+    }
+    showHUD(player, adminPanel).then((response) => {
+        if (response.canceled) {
+            return;
+        }
+        adminFunctionsArray[response.selection].func({ player: player });
+    });
 };
-const setPlayerValues = (showHUDPlayer, setValuesPlayer) => {
+const setPlayerValues = async (params) => {
+    const showHUDPlayer = params.player;
+    const setValuesPlayer = await choosePlayer(showHUDPlayer).then((player) => { return player; });
     const playerValuesPanel = new ModalFormData();
     playerValuesPanel.title("Player Values");
     for (const key of playerValueTypeArray) {
@@ -56,8 +71,9 @@ const setPlayerValues = (showHUDPlayer, setValuesPlayer) => {
         }
     });
 };
-addCommand({ commandName: "unlock", chatFunction: ((event) => { unlockPlayerCosmetic(event.sender, event.sender); }), directory: "twla/lmao", commandPrefix: "!!" });
-const unlockPlayerCosmetic = (showHUDPlayer, unlockPlayer) => {
+const unlockPlayerCosmetic = async (params) => {
+    const showHUDPlayer = params.player;
+    const unlockPlayer = await choosePlayer(showHUDPlayer).then((player) => { return player; });
     const unlockCosmeticsPanel = new ActionFormData();
     unlockCosmeticsPanel.title("Unlock Cosmetics");
     unlockCosmeticsPanel.button("All");
@@ -79,8 +95,9 @@ const unlockPlayerCosmetic = (showHUDPlayer, unlockPlayer) => {
         }
     });
 };
-addCommand({ commandName: "lock", chatFunction: ((event) => { lockPlayerCosmetic(event.sender, event.sender); }), directory: "twla/lmao", commandPrefix: "!!" });
-const lockPlayerCosmetic = (showHUDPlayer, lockPlayer) => {
+const lockPlayerCosmetic = async (params) => {
+    const showHUDPlayer = params.player;
+    const lockPlayer = await choosePlayer(showHUDPlayer).then((player) => { return player; });
     const lockCosmeticsPanel = new ActionFormData();
     lockCosmeticsPanel.title("Lock Cosmetics");
     lockCosmeticsPanel.button("All");
