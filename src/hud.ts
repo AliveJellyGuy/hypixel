@@ -7,6 +7,8 @@ import { Logger } from './staticScripts/Logger';
 import { GlobalVars } from './globalVars';
 import { TickFunctions } from './staticScripts/tickFunctions';
 import { LinkedList } from 'dataTypes/linkedList';
+import { ActionFormData } from '@minecraft/server-ui';
+import { showHUD } from 'staticScripts/commandFunctions';
 //import { listenerCount } from 'gulp';
 
 export interface IActionbarMessage{
@@ -63,3 +65,22 @@ for(const player of world.getAllPlayers()){
     addActionbarMessage({player: player, message:`§a§lHud initalised!`, lifetime: 100})
 }
 
+export const askForConfirmation = (player: Player, askMessage: string) : Promise<boolean> => {
+    const form = new ActionFormData();
+    form.title("Confirmation");
+    form.body(askMessage);
+    form.button("Yes");
+    form.button("No");
+
+    return showHUD(player, form).then((res) => {
+        if(res.canceled){
+            return false
+        }
+        if(res.selection == 0){
+            return true
+        }
+        else{
+            return false
+        }
+    })
+}

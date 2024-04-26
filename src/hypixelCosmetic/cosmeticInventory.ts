@@ -141,7 +141,15 @@ const buyCosmetic = (eventData: ChatSendBeforeEvent) => {
    playerCosmeticeMap.get(eventData.sender).cosmeticShop()
 }
 
-const playerCosmeticeMap = new Map<Player, PlayerCosmetic>();
+export const unlockCosmetic = (player: Player, cosmeticId : keyof CosmeticId | string) => {
+    playerCosmeticeMap.get(player).unlockCosmetic(cosmeticId);
+}
+
+export const unlockAllCosmetics = (player: Player) => {
+    playerCosmeticeMap.get(player).unlockAllCosmetics();
+}
+
+export const playerCosmeticeMap = new Map<Player, PlayerCosmetic>();
 
 for(const player of GlobalVars.players){
     playerCosmeticeMap.set(player, new PlayerCosmetic(player))
