@@ -1,4 +1,4 @@
-import { Player } from "@minecraft/server";
+import { Player, world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
 import { PlayerValueType, playerValueTypeArray } from "./playerFunctions";
@@ -6,14 +6,40 @@ import { cosmeticList } from "hypixelCosmetic/cosmeticList";
 import { lockAllCosmetics, lockCosmetic, unlockAllCosmetics, unlockCosmetic } from "hypixelCosmetic/cosmeticInventory";
 import { askForConfirmation } from "hud";
 
+enum EAdminFunctionTypes {
+    CosmeticFunctions,
+}
+interface IAdminFunction {
+    functionType: EAdminFunctionTypes,
+    functionId: string,
+    func : () => void
+}
+
+const adminFunctionsArray: IAdminFunction[] = [
+    {functionType: EAdminFunctionTypes.CosmeticFunctions, functionId: "lockAllCosmetics", func: () => {lockAllCosmetics()}},
+]
+
 addCommand({commandName: "admin", chatFunction: ((event) => {showAdminPanel(event.sender)}), directory: "twla/lmao", commandPrefix: "!!"})
+
 
 function isValidNumber(inputStr: string): boolean {
     const numericRepr = parseFloat(inputStr);
     return !isNaN(numericRepr) && numericRepr.toString().length === inputStr.length;
 }
 
-const adminFunctions = []
+const choosePlayer = (showHUDPlayer: Player) : Promise<Player> => {
+    const choosePlayerPanel = new ActionFormData();
+    choosePlayerPanel.title("Choose Player");
+    const playerNameArray= [...world.getPlayers().map((player) => player.name)];
+    for (const player of world.getPlayers()) {
+        choosePlayerPanel.button(player.name)
+    }
+    return showHUD(showHUDPlayer, choosePlayerPanel).then((response) => {
+        if(response.canceled) {return}
+        return world.getPlayers({name: playerNameArray[response.selection]})[0]
+    })
+}
+
 const showAdminPanel = (player: Player) => {
     setPlayerValues(player, player)
 }

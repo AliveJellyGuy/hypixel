@@ -1,15 +1,36 @@
+import { world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
 import { playerValueTypeArray } from "./playerFunctions";
 import { cosmeticList } from "hypixelCosmetic/cosmeticList";
 import { lockAllCosmetics, lockCosmetic, unlockAllCosmetics, unlockCosmetic } from "hypixelCosmetic/cosmeticInventory";
 import { askForConfirmation } from "hud";
+var EAdminFunctionTypes;
+(function (EAdminFunctionTypes) {
+    EAdminFunctionTypes[EAdminFunctionTypes["CosmeticFunctions"] = 0] = "CosmeticFunctions";
+})(EAdminFunctionTypes || (EAdminFunctionTypes = {}));
+const adminFunctionsArray = [
+    { functionType: EAdminFunctionTypes.CosmeticFunctions, functionId: "lockAllCosmetics", func: () => { lockAllCosmetics(); } },
+];
 addCommand({ commandName: "admin", chatFunction: ((event) => { showAdminPanel(event.sender); }), directory: "twla/lmao", commandPrefix: "!!" });
 function isValidNumber(inputStr) {
     const numericRepr = parseFloat(inputStr);
     return !isNaN(numericRepr) && numericRepr.toString().length === inputStr.length;
 }
-const adminFunctions = [];
+const choosePlayer = (showHUDPlayer) => {
+    const choosePlayerPanel = new ActionFormData();
+    choosePlayerPanel.title("Choose Player");
+    const playerNameArray = [...world.getPlayers().map((player) => player.name)];
+    for (const player of world.getPlayers()) {
+        choosePlayerPanel.button(player.name);
+    }
+    return showHUD(showHUDPlayer, choosePlayerPanel).then((response) => {
+        if (response.canceled) {
+            return;
+        }
+        return world.getPlayers({ name: playerNameArray[response.selection] })[0];
+    });
+};
 const showAdminPanel = (player) => {
     setPlayerValues(player, player);
 };
