@@ -7,6 +7,9 @@ import "./hypixelCosmetic/particleEffects";
 import "./hypixelCosmetic/cosmeticInventory";
 import "./npc/npcInteract";
 import "./hypixelFunctions/adminFunctions";
+import "./staticScripts/Logger";
+import { Logger } from "./staticScripts/Logger";
+Logger.warn("Hypixel script running!", "Hypixel");
 system.runInterval(() => {
     const players = world.getAllPlayers();
     for (const player of players) {
