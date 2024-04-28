@@ -100,4 +100,17 @@ export class LinkedList<T> {
             current = current.next;
         }
     }
+
+    getNodebyIndex(index: number): Node<T> | null {
+        if (index < 0 || index >= this.size) {
+            return null;
+        }
+        let current = this.head;
+        let count = 0;
+        while(current && count < index) {
+            current = current.next;
+            count++;
+        }
+        return current;
+    }
 }

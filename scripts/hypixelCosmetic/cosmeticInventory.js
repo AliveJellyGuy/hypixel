@@ -6,6 +6,8 @@ import { GlobalVars } from "globalVars";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
 import { ActionFormData } from "@minecraft/server-ui";
 import "../hypixelFunctions/playerFunctions";
+import { askForConfirmation } from "hud";
+import { LinkedList } from "dataTypes/linkedList";
 const EnumKeys = Object.keys(ECosmeticType).filter(key => isNaN(Number(key)));
 class PlayerCosmetic {
     constructor(player) {
@@ -72,6 +74,7 @@ class PlayerCosmetic {
         };
         this.lockCosmetic = (cosmeticId) => {
             this.player.setDynamicProperty(`${cosmeticId}`, false);
+            this.player.setDynamicProperty(`empty`, true);
             //Remove from saved and set the players cosmetic to empty if it is locked
         };
         this.unlockAllCosmetics = () => {
@@ -83,6 +86,7 @@ class PlayerCosmetic {
             for (const cosmetic of cosmeticList) {
                 this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, false);
             }
+            this.player.setDynamicProperty(`empty`, true);
             for (const key of EnumKeys) {
                 this.player.setDynamicProperty(`saved${key}`, "empty");
                 this.cosmetic[ECosmeticType[key]] = getCosmeticById("empty");
@@ -93,10 +97,14 @@ class PlayerCosmetic {
             cosmeticShop.title("Cosmetics");
             const playerGold = this.player.getHypixelValue("winsCurrency");
             cosmeticShop.body("Select a cosmetic to buy: §a" + playerGold);
+            let cosmeticsLeftToBuy = false;
+            const buyableCosmetics = new LinkedList();
             for (const cosmetic of cosmeticList) {
                 if (this.player.getDynamicProperty(`${cosmetic.cosmeticId}`)) {
                     continue;
                 }
+                cosmeticsLeftToBuy = true;
+                buyableCosmetics.append(cosmetic);
                 if (this.player.getHypixelValue("winsCurrency") >= cosmetic.cost) {
                     cosmeticShop.button(`${cosmetic.cosmeticId} \n§aCost: ${cosmetic.cost}`);
                 }
@@ -104,9 +112,31 @@ class PlayerCosmetic {
                     cosmeticShop.button(`${cosmetic.cosmeticId} \n§cCost: ${cosmetic.cost}`);
                 }
             }
+            if (!cosmeticsLeftToBuy) {
+                this.player.sendMessage("All cosmetics have been purchased!");
+                return;
+            }
             showHUD(this.player, cosmeticShop).then((response) => {
                 if (response.canceled) {
                     return;
+                }
+                if (buyableCosmetics.getNodebyIndex(response.selection).data.cost > this.player.getHypixelValue("winsCurrency")) {
+                    this.player.sendMessage("You don't have enough gold!");
+                    return;
+                }
+                else {
+                    askForConfirmation(this.player, `Are you sure you want to buy ${buyableCosmetics.getNodebyIndex(response.selection).data.cosmeticId}?`).then((res) => {
+                        if (res) {
+                            this.unlockCosmetic(buyableCosmetics.getNodebyIndex(response.selection).data.cosmeticId);
+                            this.player.setHypixelValue("winsCurrency", this.player.getHypixelValue("winsCurrency") - buyableCosmetics.getNodebyIndex(response.selection).data.cost);
+                            console.log(`Purchased ${buyableCosmetics.getNodebyIndex(response.selection).data.cosmeticId} for ${buyableCosmetics.getNodebyIndex(response.selection).data.cost} by ${this.player.name}`);
+                        }
+                        askForConfirmation(this.player, "Do you want to equip this cosmetic?").then((res2) => {
+                            if (res2) {
+                                this.setCosmetic(buyableCosmetics.getNodebyIndex(response.selection).data.cosmeticId, buyableCosmetics.getNodebyIndex(response.selection).data.cosmeticType);
+                            }
+                        });
+                    });
                 }
             });
         };

@@ -84,4 +84,16 @@ export class LinkedList {
             current = current.next;
         }
     }
+    getNodebyIndex(index) {
+        if (index < 0 || index >= this.size) {
+            return null;
+        }
+        let current = this.head;
+        let count = 0;
+        while (current && count < index) {
+            current = current.next;
+            count++;
+        }
+        return current;
+    }
 }
