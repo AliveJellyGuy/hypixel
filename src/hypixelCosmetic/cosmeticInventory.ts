@@ -10,6 +10,7 @@ import "../hypixelFunctions/playerFunctions";
 import { Interface } from "readline";
 import { askForConfirmation } from "hud";
 import { LinkedList } from "dataTypes/linkedList";
+import { Logger } from "staticScripts/Logger";
 
 
 const EnumKeys = Object.keys(ECosmeticType).filter(key =>  isNaN(Number(key)));
@@ -99,7 +100,13 @@ class PlayerCosmetic {
     lockCosmetic = (cosmeticId : keyof CosmeticId | string) => {
         this.player.setDynamicProperty(`${cosmeticId}`, false);
         this.player.setDynamicProperty(`empty`, true)
+        
+        const cosmeticType = getCosmeticById(cosmeticId).
+        Logger.warn(`Locked ${cosmeticType}`);
         //Remove from saved and set the players cosmetic to empty if it is locked
+        if(this.cosmetic[ECosmeticType[cosmeticId as keyof typeof ECosmeticType]]?.cosmeticId == cosmeticId){
+            this.setCosmetic("empty", ECosmeticType[cosmeticId as keyof typeof ECosmeticType]);
+        };
     }
 
     unlockAllCosmetics = () => {

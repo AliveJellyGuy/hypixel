@@ -75,7 +75,13 @@ class PlayerCosmetic {
         this.lockCosmetic = (cosmeticId) => {
             this.player.setDynamicProperty(`${cosmeticId}`, false);
             this.player.setDynamicProperty(`empty`, true);
+            const cosmeticType = getCosmeticById(cosmeticId).
+                Logger.warn(`Locked ${cosmeticType}`);
             //Remove from saved and set the players cosmetic to empty if it is locked
+            if (this.cosmetic[ECosmeticType[cosmeticId]]?.cosmeticId == cosmeticId) {
+                this.setCosmetic("empty", ECosmeticType[cosmeticId]);
+            }
+            ;
         };
         this.unlockAllCosmetics = () => {
             for (const cosmetic of cosmeticList) {
