@@ -87,7 +87,7 @@ class PlayerCosmetic {
         });
     }
 
-    setCosmetic = (cosmeticId : keyof CosmeticId |string, cosmeticSlot: ECosmeticType) => {
+    setCosmetic = (cosmeticId : keyof CosmeticId, cosmeticSlot: ECosmeticType) => {
         this.cosmetic[cosmeticSlot] = getCosmeticById(cosmeticId);
         this.player.setDynamicProperty(`saved${ECosmeticType[cosmeticSlot]}`, cosmeticSlot);
         console.warn(`Saved under key: saved${ECosmeticType[cosmeticSlot]} value: ${cosmeticSlot}`);
@@ -101,15 +101,15 @@ class PlayerCosmetic {
         this.player.setDynamicProperty(`${cosmeticId}`, false);
         this.player.setDynamicProperty(`empty`, true)
         
-        const cosmeticType = getCosmeticById(cosmeticId).
-        Logger.warn(`Locked ${cosmeticType}`);
-        //Remove from saved and set the players cosmetic to empty if it is locked
-        if(this.cosmetic[ECosmeticType[cosmeticId as keyof typeof ECosmeticType]]?.cosmeticId == cosmeticId){
-            this.setCosmetic("empty", ECosmeticType[cosmeticId as keyof typeof ECosmeticType]);
+        const cosmeticType = getCosmeticById(cosmeticId).cosmeticType;
+        Logger.log(`Locked ${cosmeticType}`);
+        if(this.cosmetic[cosmeticType].cosmeticId == cosmeticId){
+            this.setCosmetic("empty", cosmeticType);
         };
     }
 
     unlockAllCosmetics = () => {
+        Logger.log(`Unlocked all cosmetics for ${this.player.name}`);
         for(const cosmetic of cosmeticList){
             this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, true);
         }

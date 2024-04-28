@@ -12,7 +12,7 @@ export enum ECosmeticType {
 
 export interface ICosmetic {
     cosmeticType: ECosmeticType,
-    cosmeticId: string,
+    cosmeticId: keyof CosmeticId,
     cosmeticFunction: (params: ICosmeticFunctionParameters) => void,
     cost: number
 }
@@ -25,9 +25,9 @@ export const cosmeticList: ICosmetic[] = [
 
 //This is just for content assist this doesnt do liek anything in code if this makes sense just dw abt it :)
 export type CosmeticId = {
-    "empty": typeof cosmeticList[0];
-    "footstepSoundCircle": typeof cosmeticList[1];
-    "jumpPoofEffect": typeof cosmeticList[2];
+    "empty";
+    "footstepSoundCircle";
+    "jumpPoofEffect";
 };
 
 // Arrow function to get ICosmetic object by CosmeticId string

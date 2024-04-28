@@ -8,6 +8,7 @@ import { ActionFormData } from "@minecraft/server-ui";
 import "../hypixelFunctions/playerFunctions";
 import { askForConfirmation } from "hud";
 import { LinkedList } from "dataTypes/linkedList";
+import { Logger } from "staticScripts/Logger";
 const EnumKeys = Object.keys(ECosmeticType).filter(key => isNaN(Number(key)));
 class PlayerCosmetic {
     constructor(player) {
@@ -75,15 +76,15 @@ class PlayerCosmetic {
         this.lockCosmetic = (cosmeticId) => {
             this.player.setDynamicProperty(`${cosmeticId}`, false);
             this.player.setDynamicProperty(`empty`, true);
-            const cosmeticType = getCosmeticById(cosmeticId).
-                Logger.warn(`Locked ${cosmeticType}`);
-            //Remove from saved and set the players cosmetic to empty if it is locked
-            if (this.cosmetic[ECosmeticType[cosmeticId]]?.cosmeticId == cosmeticId) {
-                this.setCosmetic("empty", ECosmeticType[cosmeticId]);
+            const cosmeticType = getCosmeticById(cosmeticId).cosmeticType;
+            Logger.log(`Locked ${cosmeticType}`);
+            if (this.cosmetic[cosmeticType].cosmeticId == cosmeticId) {
+                this.setCosmetic("empty", cosmeticType);
             }
             ;
         };
         this.unlockAllCosmetics = () => {
+            Logger.log(`Unlocked all cosmetics for ${this.player.name}`);
             for (const cosmetic of cosmeticList) {
                 this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, true);
             }

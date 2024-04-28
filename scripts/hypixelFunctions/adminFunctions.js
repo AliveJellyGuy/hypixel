@@ -27,7 +27,7 @@ const choosePlayer = async (showHUDPlayer) => {
     choosePlayerPanel.title("Choose Player");
     const playerNameArray = [...world.getPlayers().map((player) => player.name)];
     for (const player of world.getPlayers()) {
-        choosePlayerPanel.button(player.name);
+        choosePlayerPanel.button(`${player.name} (aka ${player.nameTag})`);
     }
     return showHUD(showHUDPlayer, choosePlayerPanel).then((response) => {
         if (response.canceled) {
