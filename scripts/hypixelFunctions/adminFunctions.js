@@ -5,6 +5,7 @@ import { playerValueTypeArray } from "./playerFunctions";
 import { cosmeticList } from "hypixelCosmetic/cosmeticList";
 import { lockAllCosmetics, lockCosmetic, unlockAllCosmetics, unlockCosmetic } from "hypixelCosmetic/cosmeticInventory";
 import { askForConfirmation } from "hud";
+import { switchNamehud } from "customName";
 var EAdminFunctionTypes;
 (function (EAdminFunctionTypes) {
     EAdminFunctionTypes[EAdminFunctionTypes["PlayerValues"] = 0] = "PlayerValues";
@@ -14,6 +15,7 @@ const adminFunctionsArray = [
     { functionType: EAdminFunctionTypes.PlayerValues, functionId: "setPlayerValues", func: (val) => { setPlayerValues(val); } },
     { functionType: EAdminFunctionTypes.CosmeticFunctions, functionId: "unlockCosmetic", func: (val) => { unlockPlayerCosmetic(val); } },
     { functionType: EAdminFunctionTypes.CosmeticFunctions, functionId: "lockCosmetic", func: (val) => { lockPlayerCosmetic(val); } },
+    { functionType: EAdminFunctionTypes.CosmeticFunctions, functionId: "Rename player", func: (val) => { changePlayerName(val); } },
 ];
 addCommand({ commandName: "admin", chatFunction: ((event) => { showAdminPanel(event.sender); }), directory: "twla/lmao", commandPrefix: "!!" });
 function isValidNumber(inputStr) {
@@ -118,4 +120,10 @@ const lockPlayerCosmetic = async (params) => {
             lockCosmetic(lockPlayer, cosmeticList[response.selection - 1].cosmeticId);
         }
     });
+};
+/** rename hud ;;nick @tutorial */
+const changePlayerName = async (params) => {
+    const showHudPlayer = params.player;
+    const switchNamePlayer = await choosePlayer(showHudPlayer);
+    switchNamehud(showHudPlayer, switchNamePlayer);
 };

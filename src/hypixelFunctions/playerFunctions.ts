@@ -1,7 +1,7 @@
 import { Player, world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { Logger, LoggerClass } from "staticScripts/Logger";
-import { showHUD } from "staticScripts/commandFunctions";
+import { addCommand, showHUD } from "staticScripts/commandFunctions";
 
 // Define the PlayerValues type
 
@@ -56,6 +56,4 @@ const showPlayerStats = (showHUDPlayer: Player, getPlayer: Player) => {
     showHUD(showHUDPlayer, playerStatsPanel)
 }
 
-for (const player of world.getAllPlayers()) {
-    showPlayerStats(player, player);
-}
+addCommand({commandName: "stats", commandPrefix: ";;", directory: "hypixel", chatFunction: ((chatSendEvent) => {showPlayerStats(chatSendEvent.sender, chatSendEvent.sender)}),})

@@ -25,7 +25,7 @@ world.beforeEvents.chatSend.subscribe((event) => {
         // Check if the message starts with the command string
         if (event.message != commandString) {
             // Check player tags
-            if (commandString.includes(event.message)) {
+            if (commandString.startsWith(event.message)) {
                 if (!cmd.permissions) {
                     event.sender.sendMessage(`Did you mean: §3${commandString}`);
                 }

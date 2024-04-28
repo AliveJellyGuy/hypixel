@@ -1,102 +1,34 @@
-import {world, system} from '@minecraft/server';
+import {world, system, Player} from '@minecraft/server';
 import { BookData } from "./saveData/bookData";
 import { ScoreboardFunctions } from './staticScripts/scoreboardFunctions';
-export {customName}
+import { addCommand, showHUD } from 'staticScripts/commandFunctions';
+import { ModalFormData } from '@minecraft/server-ui';
+import { Logger } from 'staticScripts/Logger';
 
-const overworld = world.getDimension("overworld")
-
-class CustomNames extends BookData{
-    /**
-     * @type {Map<String, String>}
-     */
-    #nameMap = new Map()
-    
-    
-     
-    _init(){
-
-        this._loreItem.getLore().forEach(lore => {
-            let namesSplit = lore.split(" ")
-            this.#nameMap.set(namesSplit[0], namesSplit[1])
-        })
-        world.getAllPlayers().forEach(player => {
-            if(this.#nameMap.has(player.name)){
-                //world.sendMessage(this.#nameMap.get(player.name))
-                if(player.nameTag != this.#nameMap.get(player.name)){
-                    ScoreboardFunctions.nameChange(player.nameTag, this.#nameMap.get(player.name))
-                }
-               
-                player.nameTag = this.#nameMap.get(player.name)
-               
-            }
-        })
-        
-    }
-    /**
-     * @param {Player} player
-     */
-    changeName(player, newName){
-        system.run(() => {
-            this.#nameMap.set(player.name, newName)
-            this.getLore().forEach(str => this.removeLore(0))
-            for (const [key, value] of this.#nameMap) { // Using the default iterator (could be `map.entries()` instead)
-               // world.sendMessage(`The value for key ${key} is ${value}`);
-                
-                this._addLore(`${key} ${value}`)
-                
-            }
-            if(player.nameTag != this.#nameMap.get(player.name)){
-                ScoreboardFunctions.nameChange(player.nameTag, this.#nameMap.get(player.name))
-            }
-           
-            player.nameTag = this.#nameMap.get(player.name)
-        })
-        
-    }
-    /**
-     * 
-     * @param {Player} player
-     */
-    playerJoin(player){
-        return new Promise((resolve) => { 
-            system.run(async () => {
-                if(this.#nameMap.has(player.name)){
-                    //world.sendMessage(this.#nameMap.get(player.name))
-                
-                    player.nameTag = this.#nameMap.get(player.name)   
-                }
-                resolve(null);
-            })
-        })
-       
-    }
-
+const playernamedynamicproperty="nickname"
+export const switchNamehud=(showHUDPlayer: Player, changenameplayer: Player)=>{
+    const playerHud=new ModalFormData()
+    playerHud.title("Change the name of the player")
+    playerHud.textField("newname",`${changenameplayer.nameTag}`, `${changenameplayer.name}`)
+    showHUD(showHUDPlayer, playerHud).then((result)=>{
+        if (result.canceled){return}
+        const newname=result.formValues[0] as string
+        changenameplayer.nameTag= newname
+        changenameplayer.setDynamicProperty(playernamedynamicproperty, newname)
+        Logger.log(`change name for our player ${changenameplayer.name} to ${result.formValues [0]}`)
+    })
 }
 
-let customName = new CustomNames({x:0, y:-60, z:0}, 1)
+addCommand({commandName: "nick", commandPrefix: ";;", permissions: ["vip"], directory: "changename", chatFunction:(chatSendEvent)=>{
+    switchNamehud(chatSendEvent.sender, chatSendEvent.sender)
+},})
 
-const commandPrefix = ";;";
-/* world.afterEvents.playerJoin.subscribe((eventData) => {
-    customName.playerJoin(eventData.playerName)
-}) */
 
-world.beforeEvents.chatSend.subscribe((eventData) => {
-    let message = eventData.message;
-    if(!message.startsWith(commandPrefix)) {return}
-    
-    let player =  eventData.sender // You could just do getPlayerObject(eventData.sender).getPlayer() but this looks lame
-    let msgSplit = message.split(" ")
-    switch (msgSplit[0]) {
-        case ';;switchName':
-            if (!player.hasTag('Admin') && !player.isOp()) return;
-            eventData.cancel = true;
-            let newCustomName = message.slice(msgSplit[0].length + 1)
-       
-            customName.changeName(player, newCustomName)
-            player.runCommandAsync('tell @s Your nametag has been updated to: ' + player.nameTag);
-            break;
-        default:
-            eventData.cancel = true;
-            player.runCommandAsync('tell @s ' + eventData.message + ' is not a valid cmd');
+world.afterEvents.playerSpawn.subscribe((eventData)=>{
+    const player= eventData.player
+    const result= player.getDynamicProperty(playernamedynamicproperty)
+    if (result==undefined){
+        return
     }
+    player.nameTag= result as string
 })

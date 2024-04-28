@@ -9,6 +9,7 @@ import "./npc/npcInteract";
 import "./hypixelFunctions/adminFunctions";
 import "./staticScripts/Logger";
 import { Logger } from "./staticScripts/Logger";
+import "./customName";
 Logger.warn("Hypixel script running!", "Hypixel");
 system.runInterval(() => {
     const players = world.getAllPlayers();

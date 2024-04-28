@@ -1,7 +1,7 @@
-import { Player, world } from "@minecraft/server";
+import { Player } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
 import { Logger } from "staticScripts/Logger";
-import { showHUD } from "staticScripts/commandFunctions";
+import { addCommand, showHUD } from "staticScripts/commandFunctions";
 // Define properties on hypixelValues object
 Player.prototype.getHypixelValue = function (key) {
     if (this.getDynamicProperty(key) === undefined) {
@@ -28,6 +28,4 @@ const showPlayerStats = (showHUDPlayer, getPlayer) => {
     playerStatsPanel.button("Close");
     showHUD(showHUDPlayer, playerStatsPanel);
 };
-for (const player of world.getAllPlayers()) {
-    showPlayerStats(player, player);
-}
+addCommand({ commandName: "stats", commandPrefix: ";;", directory: "hypixel", chatFunction: ((chatSendEvent) => { showPlayerStats(chatSendEvent.sender, chatSendEvent.sender); }), });
