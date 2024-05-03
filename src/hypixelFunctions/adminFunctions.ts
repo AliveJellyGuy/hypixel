@@ -6,6 +6,7 @@ import { cosmeticList } from "hypixelCosmetic/cosmeticList";
 import { lockAllCosmetics, lockCosmetic, unlockAllCosmetics, unlockCosmetic } from "hypixelCosmetic/cosmeticInventory";
 import { askForConfirmation } from "hud";
 import { switchNamehud } from "customName";
+import { Logger } from "staticScripts/Logger";
 
 enum EAdminFunctionTypes {
     PlayerValues,
@@ -50,6 +51,7 @@ const choosePlayer = async (showHUDPlayer: Player) : Promise<Player> => {
 }
 
 const showAdminPanel = (player: Player) => {
+    Logger.log(`Showing admin panel for ${player.name}`, "Admin")
     const adminPanel = new ActionFormData();
     adminPanel.title("Admin Panel");
     for (const adminFunction of adminFunctionsArray) {

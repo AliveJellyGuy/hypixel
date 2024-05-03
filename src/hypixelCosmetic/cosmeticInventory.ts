@@ -1,4 +1,4 @@
-import { ChatSendBeforeEvent, Player, world } from "@minecraft/server";
+import { BlockPermutation, ChatSendBeforeEvent, Player, world } from "@minecraft/server";
 import { CosmeticId, ECosmeticType, ICosmetic, ICosmeticFunctionParameters, cosmeticList, getCosmeticById } from "./cosmeticList";
 import { TickFunctions } from "staticScripts/tickFunctions";
 import { JumpFunctions } from "playerMovement/jumpFunctions";
@@ -88,12 +88,15 @@ class PlayerCosmetic {
     }
 
     setCosmetic = (cosmeticId : keyof CosmeticId, cosmeticSlot: ECosmeticType) => {
+
         this.cosmetic[cosmeticSlot] = getCosmeticById(cosmeticId);
         this.player.setDynamicProperty(`saved${ECosmeticType[cosmeticSlot]}`, cosmeticSlot);
+        Logger.log(`${this.player.name} Equipped ${cosmeticId}`, "Cosmetics");
         console.warn(`Saved under key: saved${ECosmeticType[cosmeticSlot]} value: ${cosmeticSlot}`);
     }
 
     unlockCosmetic = (cosmeticId : keyof CosmeticId | string) => {
+        Logger.log(`Unlocked ${cosmeticId}`, "Cosmetics");
         this.player.setDynamicProperty(`${cosmeticId}`, true);
     }
 
@@ -102,14 +105,14 @@ class PlayerCosmetic {
         this.player.setDynamicProperty(`empty`, true)
         
         const cosmeticType = getCosmeticById(cosmeticId).cosmeticType;
-        Logger.log(`Locked ${cosmeticType}`);
+        Logger.log(`Locked ${cosmeticType}`, "Cosmetics");
         if(this.cosmetic[cosmeticType].cosmeticId == cosmeticId){
             this.setCosmetic("empty", cosmeticType);
         };
     }
 
     unlockAllCosmetics = () => {
-        Logger.log(`Unlocked all cosmetics for ${this.player.name}`);
+        Logger.log(`Unlocked all cosmetics for ${this.player.name}`, "Cosmetics");
         for(const cosmetic of cosmeticList){
             this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, true);
         }
@@ -117,6 +120,7 @@ class PlayerCosmetic {
     }
 
     lockAllCosmetics = () => {
+        Logger.log(`Locked all cosmetics for ${this.player.name}`, "Cosmetics");
         for(const cosmetic of cosmeticList){
             this.player.setDynamicProperty(`${cosmetic.cosmeticId}`, false);
         }
@@ -222,4 +226,5 @@ world.afterEvents.playerSpawn.subscribe((eventData) => {
         playerCosmeticeMap.set(player, new PlayerCosmetic(player))
         playerCosmeticeMap.get(player).unlockCosmetic("empty");
     }
+    
 })
