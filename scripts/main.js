@@ -10,6 +10,7 @@ import "./hypixelFunctions/adminFunctions";
 import "./staticScripts/Logger";
 import { Logger } from "./staticScripts/Logger";
 import "./customName";
+import "./MapParser/loadMap";
 Logger.warn("Hypixel script running!", "Hypixel");
 system.runInterval(() => {
     const players = world.getAllPlayers();

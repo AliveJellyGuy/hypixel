@@ -6,6 +6,7 @@ import { cosmeticList } from "hypixelCosmetic/cosmeticList";
 import { lockAllCosmetics, lockCosmetic, unlockAllCosmetics, unlockCosmetic } from "hypixelCosmetic/cosmeticInventory";
 import { askForConfirmation } from "hud";
 import { switchNamehud } from "customName";
+import { Logger } from "staticScripts/Logger";
 var EAdminFunctionTypes;
 (function (EAdminFunctionTypes) {
     EAdminFunctionTypes[EAdminFunctionTypes["PlayerValues"] = 0] = "PlayerValues";
@@ -37,6 +38,7 @@ const choosePlayer = async (showHUDPlayer) => {
     });
 };
 const showAdminPanel = (player) => {
+    Logger.log(`Showing admin panel for ${player.name}`, "Admin");
     const adminPanel = new ActionFormData();
     adminPanel.title("Admin Panel");
     for (const adminFunction of adminFunctionsArray) {
