@@ -33,6 +33,10 @@ class TickFunction{
     static addFunction(newFunction, tick){
         this.tickFunctions.push(new TickFunction(newFunction, tick));
     }
+
+    static removeFunction(removeFunction: () => void) {
+        this.tickFunctions = this.tickFunctions.filter(func => func.tickFunction !== removeFunction);
+    }
  }
  
  TickFunctions.tick();

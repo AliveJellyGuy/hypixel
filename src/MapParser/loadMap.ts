@@ -1,5 +1,7 @@
 import { BlockPermutation, Player, Vector3, world } from "@minecraft/server"
+import { IBridgeData, blue_kit, bridgeNextRound, bridgeTick, red_kit } from "Bridge/bridge"
 import { Logger } from "staticScripts/Logger"
+import { TickFunctions } from "staticScripts/tickFunctions"
 import { VectorFunctions } from "staticScripts/vectorFunctions"
 
 enum EGameMode {
@@ -32,14 +34,7 @@ interface GameModeDataMap {
     [EGameMode.BRIDGE]: IBridgeData;
     // Add more game modes here if needed
 }
-interface IBridgeData {
-    teams: {
-        teamName: string,
-        playerAmount: number,
-        players: Player[],
-        spawnPoints: Vector3[]
-    }[]
-}
+
 class MapParser {
     static loadMap = (mapData: IMapData, offset: Vector3, players: Player[]) => {
         Logger.warn(`Loading Map: ${mapData.name}`, "MapParser");
@@ -78,11 +73,15 @@ class MapParser {
                 let currentPlayerIndex = 0;
                 for(const team of bridgeData.teams) {
                     for(let i = 0; i < team.playerAmount; i++) {
+                        
                         const player = players[currentPlayerIndex];
-                        player.teleport(team.spawnPoints[i]);
+                        team.players.push(player);
+                        player.teleport(team.spawnPoints[i % team.spawnPoints.length]);
                        
                     }
                 }
+                TickFunctions.addFunction(bridgeTick.bind(this, mapDataCopy), 5)
+                bridgeNextRound(mapDataCopy)
         }
 
         //Save the map
@@ -90,7 +89,8 @@ class MapParser {
     }
 
     static unlaodMap = (mapID: number) => {
-        
+        const overworld = world.getDimension("overworld");
+        //overworld.fillBlocks()
         currentMaps.delete(mapID);
     }
 }
@@ -117,8 +117,28 @@ const testMap : IMapData = {
     ],
     gameModeData: {
         teams: [
-            {playerAmount: 1, teamName: "test", players: [], spawnPoints:[{x: 0, y: 10, z: 0}]},
-            {playerAmount: 1, teamName: "test2", players: [], spawnPoints: [{x: 0, y: 10, z: 0}]}
+            {
+                playerAmount: 1,
+                teamKit: red_kit,
+                teamScore: 0,
+                teamName: "test",
+                players: [], 
+                spawnPoints:[{x: 0, y: 10, z: 0}],
+                capturePoints: [{startPosition: {x: -3, y: 10, z: -3}, endPosition: {x: 3, y: 10, z: 3}}],
+                spawnBarrierBlockTypeID: "grass_block",
+                spawnBarriers: [{startPosition: {x: -3, y: 10, z: -3}, endPosition: {x: 3, y: 10, z: 3}}]
+            },
+            {
+                playerAmount: 1,
+                teamKit: blue_kit,
+                teamScore: 0,
+                teamName: "test2",
+                players: [], 
+                spawnPoints:[{x: 0, y: 11, z: 0}],
+                capturePoints: [{startPosition: {x: -3, y: 10, z: -3}, endPosition: {x: 3, y: 10, z: 3}}],
+                spawnBarrierBlockTypeID: "stone",
+                spawnBarriers: [{startPosition: {x: 0, y: 10, z: 0}, endPosition: {x: 0, y: 10, z: 0}}]
+            },
         ]
     }
 }
