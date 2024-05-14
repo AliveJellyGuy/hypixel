@@ -90,7 +90,7 @@ export const bridgeNextRound = async (MapData) => {
             overworld.fillBlocks(spawnBarriers.startPosition, spawnBarriers.endPosition, team.spawnBarrierBlockTypeID);
         }
         for (let i = 0; i < team.players.length; i++) {
-            team.teamKit.giveplayerKit(team.players[i]);
+            //team.teamKit.giveplayerKit(team.players[i]);
             team.players[i].teleport(team.spawnPoints[i % team.spawnPoints.length]);
         }
     }

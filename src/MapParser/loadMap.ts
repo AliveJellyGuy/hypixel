@@ -58,9 +58,9 @@ class MapParser {
         //load blocks
         for(const block of mapDataCopy.blocks) {
             const blockPermutation = BlockPermutation.resolve(block.blockType);
-            const location = VectorFunctions.addVector(block.blockLcoation, offset);
-            players[0].teleport(location);
-            dimension.setBlockPermutation(location, blockPermutation)
+            block.blockLcoation = VectorFunctions.addVector(block.blockLcoation, offset);	
+            players[0].teleport(block.blockLcoation);
+            dimension.setBlockPermutation(block.blockLcoation, blockPermutation)
         }
 
 
@@ -78,8 +78,27 @@ class MapParser {
                         team.players.push(player);
                         player.teleport(team.spawnPoints[i % team.spawnPoints.length]);
                        
+                    } 
+
+                    //Add offset to capture points
+                    for(const capturePoint of team.capturePoints) {
+                        capturePoint.startPosition = VectorFunctions.addVector(capturePoint.startPosition, offset);
+                        capturePoint.endPosition = VectorFunctions.addVector(capturePoint.endPosition, offset);
+                    }
+
+                    //Add offset to spawn barriers
+                    for(const spawnBarrier of team.spawnBarriers) {
+                        spawnBarrier.startPosition = VectorFunctions.addVector(spawnBarrier.startPosition, offset);
+                        spawnBarrier.endPosition = VectorFunctions.addVector(spawnBarrier.endPosition, offset);
+                    }
+
+                    //Add offset to spawn points
+                    // Add offset to spawn points
+                    for (let i = 0; i < team.spawnPoints.length; i++) {
+                        team.spawnPoints[i] = VectorFunctions.addVector(team.spawnPoints[i], offset);
                     }
                 }
+
                 TickFunctions.addFunction(bridgeTick.bind(this, mapDataCopy), 5)
                 bridgeNextRound(mapDataCopy)
         }
@@ -143,4 +162,4 @@ const testMap : IMapData = {
     }
 }
 
-MapParser.loadMap(testMap, {x: 0, y: 0, z: 0}, world.getAllPlayers())
+MapParser.loadMap(testMap, {x: 0, y: -20, z: 0}, world.getAllPlayers())
