@@ -1,4 +1,4 @@
-import { Player, world, system, ItemStack, Component, EnchantmentTypes, Vector3, Vector2, EquipmentSlot } from "@minecraft/server";
+import { Player, world, system, ItemStack, Component, EnchantmentTypes, Vector3, Vector2, EquipmentSlot, CompoundBlockVolume, BlockVolume } from "@minecraft/server";
 import { IMapData } from "MapParser/loadMap";
 import { warn } from "console";
 import { GlobalVars } from "globalVars";

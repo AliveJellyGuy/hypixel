@@ -1,3 +1,4 @@
+var _a;
 import { system } from "@minecraft/server";
 export { TickFunctions };
 class TickFunction {
@@ -21,12 +22,14 @@ class TickFunctions {
             }
         }, 1);
     }
-    static addFunction(newFunction, tick) {
-        this.tickFunctions.push(new TickFunction(newFunction, tick));
-    }
-    static removeFunction(removeFunction) {
-        this.tickFunctions = this.tickFunctions.filter(func => func.tickFunction !== removeFunction);
+    static removeFunction(functionId) {
+        this.tickFunctions.splice(functionId, 1);
     }
 }
+_a = TickFunctions;
 TickFunctions.tickFunctions = [];
+TickFunctions.addFunction = (newFunction, tick) => {
+    _a.tickFunctions.push(new TickFunction(newFunction, tick));
+    return _a.tickFunctions.length - 1;
+};
 TickFunctions.tick();

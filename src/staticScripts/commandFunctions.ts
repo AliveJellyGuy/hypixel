@@ -72,7 +72,7 @@ world.beforeEvents.chatSend.subscribe((event) => {
     const commandString = `${cmd.commandPrefix}${cmd.commandName}`;
 
     // Check if the message starts with the command string
-    if (event.message != commandString) {
+    if (!event.message.startsWith(commandString)) {
       // Check player tags
       if(commandString.startsWith(event.message)){
         if(!cmd.permissions){

@@ -30,12 +30,14 @@ class TickFunction{
         }, 1);
     }
  
-    static addFunction(newFunction, tick){
+    static addFunction = (newFunction, tick) : number =>{
+        
         this.tickFunctions.push(new TickFunction(newFunction, tick));
+        return this.tickFunctions.length - 1;
     }
 
-    static removeFunction(removeFunction: () => void) {
-        this.tickFunctions = this.tickFunctions.filter(func => func.tickFunction !== removeFunction);
+    static removeFunction(functionId: number) {
+        this.tickFunctions.splice(functionId, 1);
     }
  }
  
