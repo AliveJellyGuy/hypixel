@@ -9,6 +9,8 @@ export var EGameMode;
 (function (EGameMode) {
     EGameMode[EGameMode["BRIDGE"] = 0] = "BRIDGE";
 })(EGameMode || (EGameMode = {}));
+world.structureManager.delete("mapparser:airStruct");
+const airStruct = world.structureManager.createEmpty("mapparser:airStruct", { x: 64, y: 64, z: 64 });
 class MapParser {
 }
 _a = MapParser;
@@ -51,7 +53,11 @@ MapParser.loadMap = async (mapData, offset, players) => {
             let currentPlayerIndex = 0;
             for (const team of bridgeData.teams) {
                 for (let i = 0; i < team.playerAmount; i++) {
+                    if (currentPlayerIndex >= players.length) {
+                        break;
+                    }
                     const player = players[currentPlayerIndex];
+                    currentPlayerIndex++;
                     team.players.push(player);
                     player.teleport(team.spawnPoints[i % team.spawnPoints.length]);
                 }
@@ -129,7 +135,8 @@ MapParser.placeLargeStructure = async (structureId, dimension, startLocation, en
 MapParser.placeStructureArray = async (structures, dimension, offset) => {
     for (const structure of structures) {
         Logger.warn(`Placing Preloaded ${structure.structureSaveId} at ${structure.startPosition.x} ${structure.startPosition.y} ${structure.startPosition.z}`, "MapParser");
-        world.structureManager.place(structure.structureSaveId, dimension, VectorFunctions.addVector(structure.startPosition, offset));
+        structure.startPosition = VectorFunctions.addVector(structure.startPosition, offset);
+        world.structureManager.place(structure.structureSaveId, dimension, structure.startPosition);
     }
 };
 MapParser.createStructureArray = async (structureId, dimension, startLocation, endLocation) => {
@@ -190,8 +197,14 @@ MapParser.unlaodMap = (mapID) => {
             const bridgeData = currentMap.gameModeData;
             TickFunctions.removeFunction(currentMap.tickFunctionId);
     }
+    for (const structure of currentMap.structures) {
+        Logger.warn(`Placing Preloaded ${structure.structureSaveId} at ${structure.startPosition.x} ${structure.startPosition.y} ${structure.startPosition.z}`, "MapParser");
+        for (let y = -32; y < 32; y++) {
+            overworld.fillBlocks(VectorFunctions.addVector(structure.startPosition, { x: 0, y: y, z: 0 }), VectorFunctions.addVector(structure.startPosition, { x: 63, y: y, z: 63 }), "air");
+        }
+    }
     //THIS DOESNT WORK SINC EFILL BLOCK LIMIT IS 32000 OR SMTHN
-    overworld.fillBlocks(currentMap.startLocation, currentMap.endLocation, "air");
+    //overworld.fillBlocks(currentMap.startLocation, currentMap.endLocation, "air");
     currentMaps.delete(mapID);
 };
 /**
@@ -252,10 +265,10 @@ const testMap = {
                 teamScore: 0,
                 teamName: "test",
                 players: [],
-                spawnPoints: [{ x: 0, y: 10, z: 0 }],
-                capturePoints: [{ startPosition: { x: -3, y: 10, z: -3 }, endPosition: { x: 3, y: 10, z: 3 } }],
-                spawnBarrierBlockTypeID: "grass_block",
-                spawnBarriers: [{ startPosition: { x: -3, y: 10, z: -3 }, endPosition: { x: 3, y: 10, z: 3 } }]
+                spawnPoints: [{ x: 10, y: 21, z: 15 }],
+                capturePoints: [{ startPosition: { x: 11, y: 8, z: 17 }, endPosition: { x: 7, y: 8, z: 13 } }],
+                spawnBarrierBlockTypeID: "glass",
+                spawnBarriers: [{ startPosition: { x: 9, y: 20, z: 13 }, endPosition: { x: 11, y: 20, z: 17 } }]
             },
             {
                 playerAmount: 1,
@@ -263,10 +276,10 @@ const testMap = {
                 teamScore: 0,
                 teamName: "test2",
                 players: [],
-                spawnPoints: [{ x: 0, y: 11, z: 0 }],
-                capturePoints: [{ startPosition: { x: -3, y: 10, z: -3 }, endPosition: { x: 3, y: 10, z: 3 } }],
-                spawnBarrierBlockTypeID: "stone",
-                spawnBarriers: [{ startPosition: { x: 0, y: 10, z: 0 }, endPosition: { x: 0, y: 10, z: 0 } }]
+                spawnPoints: [{ x: 73, y: 21, z: 15 }],
+                capturePoints: [{ startPosition: { x: 75, y: 8, z: 17 }, endPosition: { x: 71, y: 8, z: 13 } }],
+                spawnBarrierBlockTypeID: "glass",
+                spawnBarriers: [{ startPosition: { x: 71, y: 20, z: 13 }, endPosition: { x: 73, y: 20, z: 17 } }]
             },
         ]
     }
@@ -276,7 +289,7 @@ const preloadMaps = async () => {
     testMap.structures = await MapParser.createStructureArray(testMap.structureId, world.getDimension("overworld"), testMap.startLocation, testMap.endLocation);
     Logger.warn("Done Loading Map");
     Logger.warn(JSON.stringify(world.structureManager.getIds()));
-    MapParser.loadMap(testMap, { x: 0, y: -20, z: 0 }, world.getAllPlayers());
+    MapParser.loadMap(testMap, { x: 100, y: 50, z: 100 }, world.getAllPlayers());
     system.runTimeout(() => { MapParser.unlaodMap(0); }, 500);
 };
 preloadMaps();
