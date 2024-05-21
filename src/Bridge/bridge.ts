@@ -24,7 +24,7 @@ const armorSlot : Map<string, EquipmentSlot> = new Map()
 .set("boots", EquipmentSlot.Feet)
 .set("helmet", EquipmentSlot.Head)
 
-class Kit{
+export class Kit{
     private items: Item[]= []
 
     constructor (chestLocation: Vector3){
@@ -101,7 +101,7 @@ export interface IBridgeData {
         } []
     }[]
 }
-export const bridgeTick = (MapData: IMapData) => {
+export const bridgeTick = async (MapData: IMapData) => {
     const bridgeData = MapData.gameModeData as IBridgeData;
     
     for(const team of bridgeData.teams){
@@ -115,7 +115,7 @@ export const bridgeTick = (MapData: IMapData) => {
                     if(CollisionFunctions.insideBox(player.location, capturePoint.startPosition, capturePoint.endPosition, true)){
                         Logger.warn(`${player.name} captured ${enemyTeam.teamName}!`, "Bridge")
                         team.teamScore++;
-                        bridgeNextRound(MapData);
+                        bridgeNextRound(MapData, team.teamName + " §fcaptured " + enemyTeam.teamName);
                         break;
                     }
                 }
@@ -124,9 +124,17 @@ export const bridgeTick = (MapData: IMapData) => {
     }
 }
 
-export const bridgeNextRound = async (MapData: IMapData) => {
+export const bridgeNextRound = async (MapData: IMapData, winningMessage: string) => {
     Logger.log(`Starting next round`, "Bridge")
+    
     const bridgeData = MapData.gameModeData as IBridgeData;
+
+    let vsMessage = "" 
+    bridgeData.teams.forEach(element => {
+        vsMessage += `§6${element.teamName}: ${element.teamScore} §fvs `    
+    });
+    vsMessage = vsMessage.slice(0, -3);
+    vsMessage += "\n"
 
     const overworld = world.getDimension("overworld");
     for(const team of bridgeData.teams) {
@@ -134,8 +142,10 @@ export const bridgeNextRound = async (MapData: IMapData) => {
             overworld.fillBlocks(spawnBarriers.startPosition, spawnBarriers.endPosition, team.spawnBarrierBlockTypeID)
         }
         for(let i = 0; i < team.players.length; i++) {
-            //team.teamKit.giveplayerKit(team.players[i]);
+            team.teamKit.giveplayerKit(team.players[i]);
             team.players[i].teleport(team.spawnPoints[i % team.spawnPoints.length]);
+            team.players[i].onScreenDisplay.setTitle(`§a${vsMessage}${winningMessage}`, {fadeInDuration: 0, stayDuration: 100, fadeOutDuration: 0});
+            team.players[i].playSound("random.levelup");
         }
     }
     

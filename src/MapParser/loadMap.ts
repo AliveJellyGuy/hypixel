@@ -1,5 +1,6 @@
 import { BlockPermutation, BlockVolume, BlockVolumeBase, Dimension, InvalidStructureError, Player, Structure, StructureManager, Vector3, system, world } from "@minecraft/server"
-import { IBridgeData, blue_kit, bridgeNextRound, bridgeTick, red_kit } from "Bridge/bridge"
+import { IBridgeData, Kit, blue_kit, bridgeNextRound, bridgeTick, red_kit } from "Bridge/bridge"
+import { GlobalVars } from "globalVars"
 
 import { Logger } from "staticScripts/Logger"
 import { AwaitFunctions } from "staticScripts/awaitFunctions"
@@ -16,7 +17,9 @@ export interface IMapData {
     name: string,
     description: string,
     gameMode: EGameMode,
+
     minimumPlayerAmount: number,
+    players: Player[],
 
     startLocation: Vector3,
     endLocation: Vector3,
@@ -25,6 +28,7 @@ export interface IMapData {
     structures: {structureSaveId: string, startPosition: Vector3}[],
     /**If the number is -1, the tick function is not used */
     tickFunctionId: number,
+    mapId: number
 
     entities: {
         entityType: string
@@ -58,7 +62,7 @@ class MapParser {
         while (currentMaps.has(findIndex)) {
             findIndex++;
         }
-        
+        //Manage Players
         if(mapData.minimumPlayerAmount > players.length) {            
             for(const player of players) {
                 player.sendMessage(`Not enough players to start the map! MapID: ${findIndex} Map Name: ${mapData.name}`);
@@ -66,6 +70,9 @@ class MapParser {
             Logger.log(`Not enough players to start the map! MapID: ${findIndex} Map Name: ${mapData.name}`, "MapParser");
             return;
         }
+
+        mapDataCopy.players = players;
+
         //load blocks
         
         mapDataCopy.endLocation = VectorFunctions.addVector(VectorFunctions.subtractVector(mapDataCopy.startLocation, mapDataCopy.endLocation), offset);
@@ -100,7 +107,6 @@ class MapParser {
                         const player = players[currentPlayerIndex];
                         currentPlayerIndex++;
                         team.players.push(player);
-                        player.teleport(team.spawnPoints[i % team.spawnPoints.length]);
                        
                     } 
 
@@ -124,7 +130,7 @@ class MapParser {
                 }
 
                 mapDataCopy.tickFunctionId = TickFunctions.addFunction(bridgeTick.bind(this, mapDataCopy), 5)
-                bridgeNextRound(mapDataCopy)
+                bridgeNextRound(mapDataCopy, "Round start!")
         }
 
         //Save the map
@@ -258,6 +264,11 @@ class MapParser {
             return;
         }
         const currentMap = currentMaps.get(mapID);
+
+        for(const player of currentMap.players) {
+            player.teleport(GlobalVars.spawn)
+        }
+
         switch (currentMap.gameMode) {
             case EGameMode.BRIDGE:
                 const bridgeData = currentMap.gameModeData as IBridgeData;
@@ -334,6 +345,7 @@ const testMap : IMapData = {
     description: "test",
     gameMode: EGameMode.BRIDGE,
     minimumPlayerAmount: 1,
+    players: [],
 
     startLocation: {x: -1047, y: 84, z: -1027},
     endLocation: {x:-965, y: 116, z: -1000},
@@ -342,6 +354,7 @@ const testMap : IMapData = {
     structures: [],
 
     tickFunctionId: -1,
+    mapId: -1,
 
     entities: [
         
@@ -350,9 +363,9 @@ const testMap : IMapData = {
         teams: [
             {
                 playerAmount: 1,
-                teamKit: red_kit,
+                teamKit: blue_kit,
                 teamScore: 0,
-                teamName: "test",
+                teamName: "§9BLUE",
                 players: [], 
                 spawnPoints:[{x: 10, y: 21, z: 15}],
                 capturePoints: [{startPosition: {x: 11, y: 8, z: 17}, endPosition: {x: 7, y: 8, z: 13}}],
@@ -361,9 +374,9 @@ const testMap : IMapData = {
             },
             {
                 playerAmount: 1,
-                teamKit: blue_kit,
+                teamKit: red_kit,
                 teamScore: 0,
-                teamName: "test2",
+                teamName: "§4RED",
                 players: [], 
                 spawnPoints:[{x: 73, y: 21, z: 15}],
                 capturePoints: [{startPosition: {x: 75, y: 8, z: 17}, endPosition: {x: 71, y: 8, z: 13}}],
@@ -381,5 +394,8 @@ const preloadMaps = async () => {
     MapParser.loadMap(testMap, {x: 100, y: 50, z: 100}, world.getAllPlayers())
     system.runTimeout(() => {MapParser.unlaodMap(0)}, 500)
 }
+system.run(() => {
+    
 preloadMaps()
+})
 

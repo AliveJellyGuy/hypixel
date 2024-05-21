@@ -1,6 +1,7 @@
 var _a;
 import { BlockVolume, InvalidStructureError, system, world } from "@minecraft/server";
 import { blue_kit, bridgeNextRound, bridgeTick, red_kit } from "Bridge/bridge";
+import { GlobalVars } from "globalVars";
 import { Logger } from "staticScripts/Logger";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { TickFunctions } from "staticScripts/tickFunctions";
@@ -24,6 +25,7 @@ MapParser.loadMap = async (mapData, offset, players) => {
     while (currentMaps.has(findIndex)) {
         findIndex++;
     }
+    //Manage Players
     if (mapData.minimumPlayerAmount > players.length) {
         for (const player of players) {
             player.sendMessage(`Not enough players to start the map! MapID: ${findIndex} Map Name: ${mapData.name}`);
@@ -31,6 +33,7 @@ MapParser.loadMap = async (mapData, offset, players) => {
         Logger.log(`Not enough players to start the map! MapID: ${findIndex} Map Name: ${mapData.name}`, "MapParser");
         return;
     }
+    mapDataCopy.players = players;
     //load blocks
     mapDataCopy.endLocation = VectorFunctions.addVector(VectorFunctions.subtractVector(mapDataCopy.startLocation, mapDataCopy.endLocation), offset);
     mapDataCopy.startLocation = offset;
@@ -59,7 +62,6 @@ MapParser.loadMap = async (mapData, offset, players) => {
                     const player = players[currentPlayerIndex];
                     currentPlayerIndex++;
                     team.players.push(player);
-                    player.teleport(team.spawnPoints[i % team.spawnPoints.length]);
                 }
                 //Add offset to capture points
                 for (const capturePoint of team.capturePoints) {
@@ -78,7 +80,7 @@ MapParser.loadMap = async (mapData, offset, players) => {
                 }
             }
             mapDataCopy.tickFunctionId = TickFunctions.addFunction(bridgeTick.bind(_a, mapDataCopy), 5);
-            bridgeNextRound(mapDataCopy);
+            bridgeNextRound(mapDataCopy, "Round start!");
     }
     //Save the map
     currentMaps.set(findIndex, mapDataCopy);
@@ -192,6 +194,9 @@ MapParser.unlaodMap = (mapID) => {
         return;
     }
     const currentMap = currentMaps.get(mapID);
+    for (const player of currentMap.players) {
+        player.teleport(GlobalVars.spawn);
+    }
     switch (currentMap.gameMode) {
         case EGameMode.BRIDGE:
             const bridgeData = currentMap.gameModeData;
@@ -251,19 +256,21 @@ const testMap = {
     description: "test",
     gameMode: EGameMode.BRIDGE,
     minimumPlayerAmount: 1,
+    players: [],
     startLocation: { x: -1047, y: 84, z: -1027 },
     endLocation: { x: -965, y: 116, z: -1000 },
     structureId: "mystructure:test",
     structures: [],
     tickFunctionId: -1,
+    mapId: -1,
     entities: [],
     gameModeData: {
         teams: [
             {
                 playerAmount: 1,
-                teamKit: red_kit,
+                teamKit: blue_kit,
                 teamScore: 0,
-                teamName: "test",
+                teamName: "§9BLUE",
                 players: [],
                 spawnPoints: [{ x: 10, y: 21, z: 15 }],
                 capturePoints: [{ startPosition: { x: 11, y: 8, z: 17 }, endPosition: { x: 7, y: 8, z: 13 } }],
@@ -272,9 +279,9 @@ const testMap = {
             },
             {
                 playerAmount: 1,
-                teamKit: blue_kit,
+                teamKit: red_kit,
                 teamScore: 0,
-                teamName: "test2",
+                teamName: "§4RED",
                 players: [],
                 spawnPoints: [{ x: 73, y: 21, z: 15 }],
                 capturePoints: [{ startPosition: { x: 75, y: 8, z: 17 }, endPosition: { x: 71, y: 8, z: 13 } }],
@@ -292,4 +299,6 @@ const preloadMaps = async () => {
     MapParser.loadMap(testMap, { x: 100, y: 50, z: 100 }, world.getAllPlayers());
     system.runTimeout(() => { MapParser.unlaodMap(0); }, 500);
 };
-preloadMaps();
+system.run(() => {
+    preloadMaps();
+});
