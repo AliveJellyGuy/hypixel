@@ -1,20 +1,23 @@
 var _a;
 import { BlockVolume, InvalidStructureError, system, world } from "@minecraft/server";
-import { blue_kit, bridgeNextRound, bridgeTick, red_kit } from "Bridge/bridge";
+import { bridgeNextRound, bridgeTick } from "Bridge/bridge";
 import { GlobalVars } from "globalVars";
 import { Logger } from "staticScripts/Logger";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { TickFunctions } from "staticScripts/tickFunctions";
 import { VectorFunctions } from "staticScripts/vectorFunctions";
+import { testMap } from "./Bridge Maps/brideMaps";
 export var EGameMode;
 (function (EGameMode) {
     EGameMode[EGameMode["BRIDGE"] = 0] = "BRIDGE";
 })(EGameMode || (EGameMode = {}));
 world.structureManager.delete("mapparser:airStruct");
 const airStruct = world.structureManager.createEmpty("mapparser:airStruct", { x: 64, y: 64, z: 64 });
-class MapParser {
+export class MapParser {
 }
 _a = MapParser;
+MapParser.loadMapById = async (mapId, offset, Players) => {
+};
 MapParser.loadMap = async (mapData, offset, players) => {
     Logger.warn(`Loading Map: ${mapData.name}`, "MapParser");
     const dimension = world.getDimension("overworld");
@@ -82,6 +85,7 @@ MapParser.loadMap = async (mapData, offset, players) => {
             mapDataCopy.tickFunctionId = TickFunctions.addFunction(bridgeTick.bind(_a, mapDataCopy), 5);
             bridgeNextRound(mapDataCopy, "Round start!");
     }
+    mapDataCopy.mapId = findIndex;
     //Save the map
     currentMaps.set(findIndex, mapDataCopy);
 };
@@ -251,53 +255,19 @@ MapParser.saveMap = (bL1, bL2) => {
     console.warn(combinedString);
 };
 const currentMaps = new Map();
-const testMap = {
-    name: "test",
-    description: "test",
-    gameMode: EGameMode.BRIDGE,
-    minimumPlayerAmount: 1,
-    players: [],
-    startLocation: { x: -1047, y: 84, z: -1027 },
-    endLocation: { x: -965, y: 116, z: -1000 },
-    structureId: "mystructure:test",
-    structures: [],
-    tickFunctionId: -1,
-    mapId: -1,
-    entities: [],
-    gameModeData: {
-        teams: [
-            {
-                playerAmount: 1,
-                teamKit: blue_kit,
-                teamScore: 0,
-                teamName: "§9BLUE",
-                players: [],
-                spawnPoints: [{ x: 10, y: 21, z: 15 }],
-                capturePoints: [{ startPosition: { x: 11, y: 8, z: 17 }, endPosition: { x: 7, y: 8, z: 13 } }],
-                spawnBarrierBlockTypeID: "glass",
-                spawnBarriers: [{ startPosition: { x: 9, y: 20, z: 13 }, endPosition: { x: 11, y: 20, z: 17 } }]
-            },
-            {
-                playerAmount: 1,
-                teamKit: red_kit,
-                teamScore: 0,
-                teamName: "§4RED",
-                players: [],
-                spawnPoints: [{ x: 73, y: 21, z: 15 }],
-                capturePoints: [{ startPosition: { x: 75, y: 8, z: 17 }, endPosition: { x: 71, y: 8, z: 13 } }],
-                spawnBarrierBlockTypeID: "glass",
-                spawnBarriers: [{ startPosition: { x: 71, y: 20, z: 13 }, endPosition: { x: 73, y: 20, z: 17 } }]
-            },
-        ]
-    }
-};
+const mapList = [
+    testMap,
+];
+var EMapList;
+(function (EMapList) {
+    EMapList[EMapList["TEST"] = 0] = "TEST";
+})(EMapList || (EMapList = {}));
 const preloadMaps = async () => {
     Logger.warn("Loading Map");
     testMap.structures = await MapParser.createStructureArray(testMap.structureId, world.getDimension("overworld"), testMap.startLocation, testMap.endLocation);
     Logger.warn("Done Loading Map");
     Logger.warn(JSON.stringify(world.structureManager.getIds()));
     MapParser.loadMap(testMap, { x: 100, y: 50, z: 100 }, world.getAllPlayers());
-    system.runTimeout(() => { MapParser.unlaodMap(0); }, 500);
 };
 system.run(() => {
     preloadMaps();

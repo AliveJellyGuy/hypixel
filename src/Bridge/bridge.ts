@@ -1,14 +1,13 @@
 import { Player, world, system, ItemStack, Component, EnchantmentTypes, Vector3, Vector2, EquipmentSlot, CompoundBlockVolume, BlockVolume } from "@minecraft/server";
-import { IMapData } from "MapParser/loadMap";
+import { IMapData, MapParser } from "MapParser/loadMap";
 import { warn } from "console";
+import { getGameVarData } from "gameManager/gameVars";
 import { GlobalVars } from "globalVars";
 import { normalize } from "path/win32";
 import { Logger } from "staticScripts/Logger";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { CollisionFunctions } from "staticScripts/collisionFunctions";
 
-const redKitChestLocation = {x: 3, y: 57, z: -33} as Vector3;
-const blueKitChestLocation = {x: 7, y: 57, z: -33} as Vector3;
 
 const players = world.getAllPlayers();
 
@@ -73,15 +72,10 @@ export class Kit{
 }
 
 
-export const red_kit=new Kit(redKitChestLocation)
-export const blue_kit=new Kit(blueKitChestLocation)
 
-for(const player of players){
-    red_kit.giveplayerKit(player)
-    blue_kit.giveplayerKit(player)
-}
 
 export interface IBridgeData {
+    winsNeeded: number,
     teams: {
         teamName: string,
         teamKit: Kit,
@@ -129,6 +123,8 @@ export const bridgeNextRound = async (MapData: IMapData, winningMessage: string)
     
     const bridgeData = MapData.gameModeData as IBridgeData;
 
+    let gameEnd = false;
+
     let vsMessage = "" 
     bridgeData.teams.forEach(element => {
         vsMessage += `§6${element.teamName}: ${element.teamScore} §fvs `    
@@ -147,6 +143,18 @@ export const bridgeNextRound = async (MapData: IMapData, winningMessage: string)
             team.players[i].onScreenDisplay.setTitle(`§a${vsMessage}${winningMessage}`, {fadeInDuration: 0, stayDuration: 100, fadeOutDuration: 0});
             team.players[i].playSound("random.levelup");
         }
+        if(team.teamScore >= bridgeData.winsNeeded){
+            for(const player of team.players){
+                player.setHypixelValue("Wins", player.getHypixelValue("Wins") + 1);
+                player.setHypixelValue("winsCurrency", player.getHypixelValue("winsCurrency") + 1);
+            }
+            gameEnd = true;
+        }
+    }
+
+    if(gameEnd) {
+        endBridgeRound(MapData);
+        return;
     }
     
     await AwaitFunctions.waitTicks(50);
@@ -157,4 +165,9 @@ export const bridgeNextRound = async (MapData: IMapData, winningMessage: string)
         }
     }
 
+}
+
+const endBridgeRound = async (mapData: IMapData) => {
+    Logger.log(`End of round ${mapData.name} id: ${mapData.mapId}`, "Bridge")
+    MapParser.unlaodMap(mapData.mapId);
 }

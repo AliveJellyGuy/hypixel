@@ -1,9 +1,8 @@
 import { world, EquipmentSlot } from "@minecraft/server";
+import { MapParser } from "MapParser/loadMap";
 import { Logger } from "staticScripts/Logger";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { CollisionFunctions } from "staticScripts/collisionFunctions";
-const redKitChestLocation = { x: 3, y: 57, z: -33 };
-const blueKitChestLocation = { x: 7, y: 57, z: -33 };
 const players = world.getAllPlayers();
 const armorSlot = new Map()
     .set("chestplate", EquipmentSlot.Chest)
@@ -53,12 +52,6 @@ export class Kit {
         }
     }
 }
-export const red_kit = new Kit(redKitChestLocation);
-export const blue_kit = new Kit(blueKitChestLocation);
-for (const player of players) {
-    red_kit.giveplayerKit(player);
-    blue_kit.giveplayerKit(player);
-}
 export const bridgeTick = async (MapData) => {
     const bridgeData = MapData.gameModeData;
     for (const team of bridgeData.teams) {
@@ -84,6 +77,7 @@ export const bridgeTick = async (MapData) => {
 export const bridgeNextRound = async (MapData, winningMessage) => {
     Logger.log(`Starting next round`, "Bridge");
     const bridgeData = MapData.gameModeData;
+    let gameEnd = false;
     let vsMessage = "";
     bridgeData.teams.forEach(element => {
         vsMessage += `§6${element.teamName}: ${element.teamScore} §fvs `;
@@ -101,6 +95,17 @@ export const bridgeNextRound = async (MapData, winningMessage) => {
             team.players[i].onScreenDisplay.setTitle(`§a${vsMessage}${winningMessage}`, { fadeInDuration: 0, stayDuration: 100, fadeOutDuration: 0 });
             team.players[i].playSound("random.levelup");
         }
+        if (team.teamScore >= bridgeData.winsNeeded) {
+            for (const player of team.players) {
+                player.setHypixelValue("Wins", player.getHypixelValue("Wins") + 1);
+                player.setHypixelValue("winsCurrency", player.getHypixelValue("winsCurrency") + 1);
+            }
+            gameEnd = true;
+        }
+    }
+    if (gameEnd) {
+        endBridgeRound(MapData);
+        return;
     }
     await AwaitFunctions.waitTicks(50);
     for (const team of bridgeData.teams) {
@@ -108,4 +113,8 @@ export const bridgeNextRound = async (MapData, winningMessage) => {
             overworld.fillBlocks(spawnBarriers.startPosition, spawnBarriers.endPosition, "air");
         }
     }
+};
+const endBridgeRound = async (mapData) => {
+    Logger.log(`End of round ${mapData.name} id: ${mapData.mapId}`, "Bridge");
+    MapParser.unlaodMap(mapData.mapId);
 };
