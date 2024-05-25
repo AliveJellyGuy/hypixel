@@ -1,9 +1,8 @@
-import { Kit } from "Bridge/bridge";
 import { EGameMode } from "MapParser/loadMap";
 const redKitChestLocation = { x: 3, y: 57, z: -33 };
 const blueKitChestLocation = { x: 7, y: 57, z: -33 };
-const red_kit = new Kit(redKitChestLocation);
-const blue_kit = new Kit(blueKitChestLocation);
+//const red_kit=new Kit(redKitChestLocation)
+//const blue_kit=new Kit(blueKitChestLocation)
 export const testMap = {
     name: "test",
     description: "test",
@@ -22,7 +21,7 @@ export const testMap = {
         teams: [
             {
                 playerAmount: 1,
-                teamKit: blue_kit,
+                teamKitLocation: blueKitChestLocation,
                 teamScore: 0,
                 teamName: "§9BLUE",
                 players: [],
@@ -33,7 +32,7 @@ export const testMap = {
             },
             {
                 playerAmount: 1,
-                teamKit: red_kit,
+                teamKitLocation: redKitChestLocation,
                 teamScore: 0,
                 teamName: "§4RED",
                 players: [],

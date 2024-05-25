@@ -7,12 +7,11 @@ import { AwaitFunctions } from "staticScripts/awaitFunctions"
 import { addCommand } from "staticScripts/commandFunctions"
 import { TickFunctions } from "staticScripts/tickFunctions"
 import { VectorFunctions } from "staticScripts/vectorFunctions"
-import { json } from "stream/consumers"
 import { testMap } from "./Bridge Maps/brideMaps"
 
 
 export enum EGameMode {
-    BRIDGE
+    BRIDGE = 0
 }
 export interface IMapData {
     name: string,
@@ -86,7 +85,7 @@ export class MapParser {
 
         
         try{
-            await this.placeStructureArray(mapDataCopy.structures, dimension, offset);
+            await this.placeStructureArray(mapDataCopy.structures, dimension, offset, players);
         }
         catch(e){
             if(e instanceof InvalidStructureError) {
@@ -203,11 +202,15 @@ export class MapParser {
 
     }
 
-    static placeStructureArray = async (structures: {structureSaveId: string, startPosition: Vector3}[], dimension: Dimension,  offset: Vector3) => {
+    static placeStructureArray = async (structures: {structureSaveId: string, startPosition: Vector3}[], dimension: Dimension,  offset: Vector3, players: Player[]) => {
         for(const structure of structures) {
             Logger.warn(`Placing Preloaded ${structure.structureSaveId} at ${structure.startPosition.x} ${structure.startPosition.y} ${structure.startPosition.z}`, "MapParser");
             structure.startPosition = VectorFunctions.addVector(structure.startPosition, offset);
+            dimension.runCommandAsync(`tickingarea add circle ${structure.startPosition.x} ${structure.startPosition.y} ${structure.startPosition.z} 2 ${structure.structureSaveId} true`);
+            players[0].teleport(structure.startPosition)
+            await AwaitFunctions.waitTicks(20);
             world.structureManager.place(structure.structureSaveId, dimension, structure.startPosition);
+            dimension.runCommandAsync(`tickingarea remove ${structure.structureSaveId}`);
         }
     }
 
@@ -235,17 +238,30 @@ export class MapParser {
                             };
 
                             dimension.runCommandAsync(`tickingarea add ${currentStart.x} ${currentStart.y} ${currentStart.z} ${currentEnd.x} ${currentEnd.y} ${currentEnd.z} ${structureId} true`);
-                            await AwaitFunctions.waitTicks(40);
+                            await AwaitFunctions.waitTicks(10);
                             world.structureManager.delete(`${structureId}${x}${y}${z}`);
-                            const tempStructure = world.structureManager.createFromWorld(
-                                `${structureId}${x}${y}${z}`,
-                                dimension,
-                                new BlockVolume(currentStart, currentEnd),
-                                { includeBlocks: true }
-                            );
+                            let tempStructure: Structure
+                            try{
+                                tempStructure = world.structureManager.createFromWorld(
+                                    `${structureId}${x}${y}${z}`,
+                                    dimension,
+                                    new BlockVolume(currentStart, currentEnd),
+                                    { includeBlocks: true }
+                                );
+                            }
+                            catch{
+                                Logger.warn("Tickingarea not loaded in fully, waiting 40 ticks and hoping for the best :)", "Preloading Maps")
+                                await AwaitFunctions.waitTicks(30);
+                                tempStructure = world.structureManager.createFromWorld(
+                                    `${structureId}${x}${y}${z}`,
+                                    dimension,
+                                    new BlockVolume(currentStart, currentEnd),
+                                    { includeBlocks: true }
+                                );
+                            }
+                            
 
                             dimension.runCommandAsync(`tickingarea remove ${structureId}`);
-                            await AwaitFunctions.waitTicks(40);
                             structureArray.push({structureSaveId: tempStructure.id, startPosition: {x: x, y: y, z: z}});
                         }
                     }
@@ -350,7 +366,7 @@ const currentMaps = new Map<number, IMapData>();
 
 
 const mapList: IMapData[] = [
-    testMap,
+    //testMap,
 ]
 
 enum EMapList {
@@ -365,8 +381,8 @@ const preloadMaps = async () => {
     MapParser.loadMap(testMap, {x: 100, y: 50, z: 100}, world.getAllPlayers())
 
 }
-system.run(() => {
+system.runTimeout(() => {
     
 preloadMaps()
-})
+}, 100)
 

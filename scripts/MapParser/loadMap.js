@@ -42,7 +42,7 @@ MapParser.loadMap = async (mapData, offset, players) => {
     mapDataCopy.startLocation = offset;
     //Logger.warn(JSON.stringify(world.structureManager.getIds()))
     try {
-        await _a.placeStructureArray(mapDataCopy.structures, dimension, offset);
+        await _a.placeStructureArray(mapDataCopy.structures, dimension, offset, players);
     }
     catch (e) {
         if (e instanceof InvalidStructureError) {
@@ -138,11 +138,15 @@ MapParser.placeLargeStructure = async (structureId, dimension, startLocation, en
         }
     }
 };
-MapParser.placeStructureArray = async (structures, dimension, offset) => {
+MapParser.placeStructureArray = async (structures, dimension, offset, players) => {
     for (const structure of structures) {
         Logger.warn(`Placing Preloaded ${structure.structureSaveId} at ${structure.startPosition.x} ${structure.startPosition.y} ${structure.startPosition.z}`, "MapParser");
         structure.startPosition = VectorFunctions.addVector(structure.startPosition, offset);
+        dimension.runCommandAsync(`tickingarea add circle ${structure.startPosition.x} ${structure.startPosition.y} ${structure.startPosition.z} 2 ${structure.structureSaveId} true`);
+        players[0].teleport(structure.startPosition);
+        await AwaitFunctions.waitTicks(20);
         world.structureManager.place(structure.structureSaveId, dimension, structure.startPosition);
+        dimension.runCommandAsync(`tickingarea remove ${structure.structureSaveId}`);
     }
 };
 MapParser.createStructureArray = async (structureId, dimension, startLocation, endLocation) => {
@@ -167,11 +171,18 @@ MapParser.createStructureArray = async (structureId, dimension, startLocation, e
                             z: Math.min(currentStart.z + maxBlockSize, endZ)
                         };
                         dimension.runCommandAsync(`tickingarea add ${currentStart.x} ${currentStart.y} ${currentStart.z} ${currentEnd.x} ${currentEnd.y} ${currentEnd.z} ${structureId} true`);
-                        await AwaitFunctions.waitTicks(40);
+                        await AwaitFunctions.waitTicks(10);
                         world.structureManager.delete(`${structureId}${x}${y}${z}`);
-                        const tempStructure = world.structureManager.createFromWorld(`${structureId}${x}${y}${z}`, dimension, new BlockVolume(currentStart, currentEnd), { includeBlocks: true });
+                        let tempStructure;
+                        try {
+                            tempStructure = world.structureManager.createFromWorld(`${structureId}${x}${y}${z}`, dimension, new BlockVolume(currentStart, currentEnd), { includeBlocks: true });
+                        }
+                        catch {
+                            Logger.warn("Tickingarea not loaded in fully, waiting 40 ticks and hoping for the best :)", "Preloading Maps");
+                            await AwaitFunctions.waitTicks(30);
+                            tempStructure = world.structureManager.createFromWorld(`${structureId}${x}${y}${z}`, dimension, new BlockVolume(currentStart, currentEnd), { includeBlocks: true });
+                        }
                         dimension.runCommandAsync(`tickingarea remove ${structureId}`);
-                        await AwaitFunctions.waitTicks(40);
                         structureArray.push({ structureSaveId: tempStructure.id, startPosition: { x: x, y: y, z: z } });
                     }
                 }
@@ -256,7 +267,7 @@ MapParser.saveMap = (bL1, bL2) => {
 };
 const currentMaps = new Map();
 const mapList = [
-    testMap,
+//testMap,
 ];
 var EMapList;
 (function (EMapList) {
@@ -269,6 +280,6 @@ const preloadMaps = async () => {
     Logger.warn(JSON.stringify(world.structureManager.getIds()));
     MapParser.loadMap(testMap, { x: 100, y: 50, z: 100 }, world.getAllPlayers());
 };
-system.run(() => {
+system.runTimeout(() => {
     preloadMaps();
-});
+}, 100);

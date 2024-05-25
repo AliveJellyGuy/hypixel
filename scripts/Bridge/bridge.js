@@ -18,6 +18,8 @@ export class Kit {
         this.items.push(item);
     }
     giveplayerKit(player) {
+        player.runCommand("clear");
+        player.addEffect("regeneration", 5);
         const inventory = player.getComponent("inventory");
         const equippable = player.getComponent("equippable");
         for (const item of this.items) {
@@ -90,7 +92,7 @@ export const bridgeNextRound = async (MapData, winningMessage) => {
             overworld.fillBlocks(spawnBarriers.startPosition, spawnBarriers.endPosition, team.spawnBarrierBlockTypeID);
         }
         for (let i = 0; i < team.players.length; i++) {
-            team.teamKit.giveplayerKit(team.players[i]);
+            new Kit(team.teamKitLocation).giveplayerKit(team.players[i]);
             team.players[i].teleport(team.spawnPoints[i % team.spawnPoints.length]);
             team.players[i].onScreenDisplay.setTitle(`§a${vsMessage}${winningMessage}`, { fadeInDuration: 0, stayDuration: 100, fadeOutDuration: 0 });
             team.players[i].playSound("random.levelup");

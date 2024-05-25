@@ -1,6 +1,8 @@
 import { Player, world, system } from "@minecraft/server";
 
 //Pre load
+    //Map Data
+    import "MapParser/Bridge Maps/brideMaps"
 
 //Other
 import "./betterChat";

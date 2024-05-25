@@ -6,8 +6,8 @@ import { EGameMode, IMapData } from "MapParser/loadMap";
 const redKitChestLocation = {x: 3, y: 57, z: -33} as Vector3;
 const blueKitChestLocation = {x: 7, y: 57, z: -33} as Vector3;
 
-const red_kit=new Kit(redKitChestLocation)
-const blue_kit=new Kit(blueKitChestLocation)
+//const red_kit=new Kit(redKitChestLocation)
+//const blue_kit=new Kit(blueKitChestLocation)
 
 
 export const testMap : IMapData = {
@@ -34,7 +34,7 @@ export const testMap : IMapData = {
         teams: [
             {
                 playerAmount: 1,
-                teamKit: blue_kit,
+                teamKitLocation: blueKitChestLocation,
                 teamScore: 0,
                 teamName: "§9BLUE",
                 players: [], 
@@ -45,7 +45,7 @@ export const testMap : IMapData = {
             },
             {
                 playerAmount: 1,
-                teamKit: red_kit,
+                teamKitLocation: redKitChestLocation,
                 teamScore: 0,
                 teamName: "§4RED",
                 players: [], 
