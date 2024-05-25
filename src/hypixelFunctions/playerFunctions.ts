@@ -11,6 +11,7 @@ declare module "@minecraft/server" {
     interface Player {
         getHypixelValue(key: keyof PlayerValueType): number;
         setHypixelValue(key: keyof PlayerValueType, value: number): void;
+        awardWin(): void
     }
 }
 
@@ -27,6 +28,16 @@ Player.prototype.setHypixelValue = function (key: keyof PlayerValueType, value: 
     this.setDynamicProperty(key, value);
 }
 
+Player.prototype.awardWin = function () {
+    Logger.warn(`Awarding Win to ${this.name} aka ${this.nameTag}`, "Hypixel");
+    this.setHypixelValue("Wins", this.getHypixelValue("Wins") + 1);
+    this.setHypixelValue("winsCurrency", this.getHypixelValue("winsCurrency") + 1);
+    this.setHypixelValue("Current Winstreak", this.getHypixelValue("Current Winstreak") + 1);
+    if(this.getHypixelValue("Current Winstreak") > this.getHypixelValue("Highest Winstreak")) {
+        this.setHypixelValue("Highest Winstreak", this.getHypixelValue("Current Winstreak"));
+    }
+}
+
 /** 
  * If the key starts with a capital Letter, it is a public statistic
  * If it doesnt, it is a private statistic
@@ -36,12 +47,12 @@ export type PlayerValueType = {
     "Loses";
     "Kills";
     "Highest Winstreak";
+    "Current Winstreak";
     "winsCurrency";
-    "lolgetrekt";
 }
 // Define an array containing the valid strings
-export const playerValueTypeArray: (keyof PlayerValueType)[] = ["winsCurrency", "lolgetrekt"];
-export const publicStatsTypeArray: (keyof PlayerValueType)[] = ["Wins", "Loses", "Kills", "Highest Winstreak"];
+export const playerValueTypeArray: (keyof PlayerValueType)[] = ["winsCurrency"];
+export const publicStatsTypeArray: (keyof PlayerValueType)[] = ["Wins", "Loses", "Kills", "Highest Winstreak", "Current Winstreak"];
 
 const showPlayerStats = (showHUDPlayer: Player, getPlayer: Player) => {
     Logger.log(`Showing Stats to ${showHUDPlayer.name} for ${getPlayer.name}`, "Hypixel");

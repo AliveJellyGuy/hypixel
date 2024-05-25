@@ -5,6 +5,7 @@ import { Player, world, system } from "@minecraft/server";
     import "MapParser/Bridge Maps/brideMaps"
 
 //Other
+import "hypixelFunctions/playerSpawnHandler"
 import "./betterChat";
 import "./Bridge/bridge";
 import "./Bridge/BridgeWorld"

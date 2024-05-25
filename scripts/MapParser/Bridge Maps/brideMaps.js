@@ -1,3 +1,4 @@
+import { bridgeSpawn } from "Bridge/bridge";
 import { EGameMode } from "MapParser/loadMap";
 const redKitChestLocation = { x: 3, y: 57, z: -33 };
 const blueKitChestLocation = { x: 7, y: 57, z: -33 };
@@ -15,6 +16,7 @@ export const testMap = {
     structures: [],
     tickFunctionId: -1,
     mapId: -1,
+    playerSpawnFunction: bridgeSpawn,
     entities: [],
     gameModeData: {
         winsNeeded: 3,

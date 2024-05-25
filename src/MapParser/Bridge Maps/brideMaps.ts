@@ -1,5 +1,5 @@
 import { Vector3 } from "@minecraft/server";
-import { Kit } from "Bridge/bridge";
+import { Kit, bridgeSpawn } from "Bridge/bridge";
 import { EGameMode, IMapData } from "MapParser/loadMap";
 
 
@@ -25,6 +25,8 @@ export const testMap : IMapData = {
 
     tickFunctionId: -1,
     mapId: -1,
+
+    playerSpawnFunction: bridgeSpawn,
 
     entities: [
         

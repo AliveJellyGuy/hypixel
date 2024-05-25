@@ -13,9 +13,18 @@ Player.prototype.setHypixelValue = function (key, value) {
     Logger.log(`Setting ${key} to ${value}`, "Hypixel");
     this.setDynamicProperty(key, value);
 };
+Player.prototype.awardWin = function () {
+    Logger.warn(`Awarding Win to ${this.name} aka ${this.nameTag}`, "Hypixel");
+    this.setHypixelValue("Wins", this.getHypixelValue("Wins") + 1);
+    this.setHypixelValue("winsCurrency", this.getHypixelValue("winsCurrency") + 1);
+    this.setHypixelValue("Current Winstreak", this.getHypixelValue("Current Winstreak") + 1);
+    if (this.getHypixelValue("Current Winstreak") > this.getHypixelValue("Highest Winstreak")) {
+        this.setHypixelValue("Highest Winstreak", this.getHypixelValue("Current Winstreak"));
+    }
+};
 // Define an array containing the valid strings
-export const playerValueTypeArray = ["winsCurrency", "lolgetrekt"];
-export const publicStatsTypeArray = ["Wins", "Loses", "Kills", "Highest Winstreak"];
+export const playerValueTypeArray = ["winsCurrency"];
+export const publicStatsTypeArray = ["Wins", "Loses", "Kills", "Highest Winstreak", "Current Winstreak"];
 const showPlayerStats = (showHUDPlayer, getPlayer) => {
     Logger.log(`Showing Stats to ${showHUDPlayer.name} for ${getPlayer.name}`, "Hypixel");
     const playerStatsPanel = new ActionFormData();

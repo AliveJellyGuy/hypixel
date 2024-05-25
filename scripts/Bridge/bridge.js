@@ -1,4 +1,4 @@
-import { world, EquipmentSlot } from "@minecraft/server";
+import { world, EquipmentSlot, GameMode } from "@minecraft/server";
 import { MapParser } from "MapParser/loadMap";
 import { Logger } from "staticScripts/Logger";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
@@ -54,6 +54,7 @@ export class Kit {
         }
     }
 }
+//#region Bridge gamemode functions
 export const bridgeTick = async (MapData) => {
     const bridgeData = MapData.gameModeData;
     for (const team of bridgeData.teams) {
@@ -72,7 +73,37 @@ export const bridgeTick = async (MapData) => {
                         break;
                     }
                 }
+                if (player.location.y < MapData.startLocation.y - 10) {
+                    player.kill();
+                }
             }
+        }
+    }
+};
+export const bridgeSpawn = async (mapData, player) => {
+    player.setGameMode(GameMode.spectator);
+    const bridgeData = mapData.gameModeData;
+    let randomPlayer = mapData.players[Math.floor(Math.random() * mapData.players.length)];
+    let attempts = 0;
+    while (randomPlayer.id == player.id) {
+        randomPlayer = mapData.players[Math.floor(Math.random() * mapData.players.length)];
+        attempts++;
+        if (attempts > 10) {
+            player.sendMessage(`§dCould not find a player to spectate!`);
+            break;
+        }
+    }
+    if (attempts > 10) {
+        player.teleport(mapData.startLocation);
+    }
+    else {
+        player.teleport(randomPlayer.location);
+    }
+    await AwaitFunctions.waitTicks(60);
+    player.setGameMode(GameMode.survival);
+    for (const team of bridgeData.teams) {
+        if (team.players.includes(player)) {
+            player.teleport(team.spawnPoints[Math.floor(Math.random() * team.spawnPoints.length)]);
         }
     }
 };
@@ -99,8 +130,7 @@ export const bridgeNextRound = async (MapData, winningMessage) => {
         }
         if (team.teamScore >= bridgeData.winsNeeded) {
             for (const player of team.players) {
-                player.setHypixelValue("Wins", player.getHypixelValue("Wins") + 1);
-                player.setHypixelValue("winsCurrency", player.getHypixelValue("winsCurrency") + 1);
+                player.awardWin();
             }
             gameEnd = true;
         }
@@ -120,3 +150,4 @@ const endBridgeRound = async (mapData) => {
     Logger.log(`End of round ${mapData.name} id: ${mapData.mapId}`, "Bridge");
     MapParser.unlaodMap(mapData.mapId);
 };
+//#endregion

@@ -3,6 +3,7 @@ import { world, system } from "@minecraft/server";
 //Map Data
 import "MapParser/Bridge Maps/brideMaps";
 //Other
+import "hypixelFunctions/playerSpawnHandler";
 import "./betterChat";
 import "./Bridge/bridge";
 import "./Bridge/BridgeWorld";

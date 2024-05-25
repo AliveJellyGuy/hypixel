@@ -7,6 +7,30 @@ import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { TickFunctions } from "staticScripts/tickFunctions";
 import { VectorFunctions } from "staticScripts/vectorFunctions";
 import { testMap } from "./Bridge Maps/brideMaps";
+function deepCopy(obj) {
+    // Check if the value is an object or function, otherwise return it directly
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+    // Handle Date
+    if (obj instanceof Date) {
+        return new Date(obj.getTime());
+    }
+    // Handle Array
+    if (Array.isArray(obj)) {
+        const arrCopy = [];
+        obj.forEach((_, i) => {
+            arrCopy[i] = deepCopy(obj[i]);
+        });
+        return arrCopy;
+    }
+    // Handle Object
+    const objCopy = {};
+    Object.keys(obj).forEach(key => {
+        objCopy[key] = deepCopy(obj[key]);
+    });
+    return objCopy;
+}
 export var EGameMode;
 (function (EGameMode) {
     EGameMode[EGameMode["BRIDGE"] = 0] = "BRIDGE";
@@ -16,12 +40,13 @@ const airStruct = world.structureManager.createEmpty("mapparser:airStruct", { x:
 export class MapParser {
 }
 _a = MapParser;
+//#region Loading Functions
 MapParser.loadMapById = async (mapId, offset, Players) => {
 };
 MapParser.loadMap = async (mapData, offset, players) => {
     Logger.warn(`Loading Map: ${mapData.name}`, "MapParser");
     const dimension = world.getDimension("overworld");
-    const mapDataCopy = JSON.parse(JSON.stringify(mapData));
+    const mapDataCopy = deepCopy(mapData);
     //Logger.warn(JSON.stringify(world.structureManager.getWorldStructureIds()))
     //find free index
     let findIndex = 0;
@@ -50,6 +75,9 @@ MapParser.loadMap = async (mapData, offset, players) => {
             return;
         }
         Logger.warn(e, "MapParser");
+    }
+    for (const player of players) {
+        player.setSpawnFunction(mapDataCopy.playerSpawnFunction.bind(null, mapDataCopy, player));
     }
     //load entities (Implementing later since no map will use this yet)
     //load game mode data
@@ -89,6 +117,8 @@ MapParser.loadMap = async (mapData, offset, players) => {
     //Save the map
     currentMaps.set(findIndex, mapDataCopy);
 };
+//#endregion 
+//#region Structures
 /**THIS IS ALSO USELESS SINCE WE PRELOADED THE STRUCTURES*/
 MapParser.placeLargeStructure = async (structureId, dimension, startLocation, endLocation, offset) => {
     const maxBlockSize = 63;
@@ -216,6 +246,8 @@ MapParser.createStructureArray = async (structureId, dimension, startLocation, e
         }
     });
 };
+//#endregion
+//#region Unloading Functions
 MapParser.unlaodMap = (mapID) => {
     Logger.warn("UN LOADING MAP", "MapParser");
     const overworld = world.getDimension("overworld");
@@ -242,6 +274,26 @@ MapParser.unlaodMap = (mapID) => {
     //overworld.fillBlocks(currentMap.startLocation, currentMap.endLocation, "air");
     currentMaps.delete(mapID);
 };
+MapParser.removePlayerFromAllMaps = (player) => {
+    Logger.log(`Removing Player ${player.name} from all maps`, "MapParser");
+    for (const map of currentMaps.values()) {
+        _a.removePlayerFromMap(map.mapId, player);
+    }
+};
+MapParser.removePlayerFromMap = (mapID, player) => {
+    Logger.log(`Removing Player ${player.name} from Map ${mapID}`, "MapParser");
+    const currentMap = currentMaps.get(mapID);
+    currentMap.players = currentMap.players.filter(p => p !== player);
+    if (currentMap.players.length <= 1) {
+        for (const player of currentMap.players) {
+            player.setHypixelValue("Wins", player.getHypixelValue("Wins") + 1);
+            player.setHypixelValue("winsCurrency", player.getHypixelValue("winsCurrency") + 1);
+        }
+        _a.unlaodMap(mapID);
+    }
+};
+//#endregion
+//#region Unused Functions
 /**
  * THIS IS USELESS SINCE WE SWITCHED TO STRUCTURE MANAGER
  * Print out a log of the map
@@ -281,8 +333,9 @@ MapParser.saveMap = (bL1, bL2) => {
     console.warn(combinedString);
 };
 const currentMaps = new Map();
+//It complains that it is not initialised, very sad
 const mapList = [
-//testMap,
+//testMap
 ];
 var EMapList;
 (function (EMapList) {
@@ -292,9 +345,8 @@ const preloadMaps = async () => {
     Logger.warn("Loading Map");
     testMap.structures = await MapParser.createStructureArray(testMap.structureId, world.getDimension("overworld"), testMap.startLocation, testMap.endLocation);
     Logger.warn("Done Loading Map");
-    Logger.warn(JSON.stringify(world.structureManager.getIds()));
     MapParser.loadMap(testMap, { x: 100, y: 50, z: 100 }, world.getAllPlayers());
 };
-system.runTimeout(() => {
+system.run(() => {
     preloadMaps();
-}, 100);
+});
