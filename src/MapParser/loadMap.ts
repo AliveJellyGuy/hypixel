@@ -203,18 +203,32 @@ export class MapParser {
     }
 
     static placeStructureArray = async (structures: {structureSaveId: string, startPosition: Vector3}[], dimension: Dimension,  offset: Vector3, players: Player[]) => {
+        
         for(const structure of structures) {
             Logger.warn(`Placing Preloaded ${structure.structureSaveId} at ${structure.startPosition.x} ${structure.startPosition.y} ${structure.startPosition.z}`, "MapParser");
             structure.startPosition = VectorFunctions.addVector(structure.startPosition, offset);
-            dimension.runCommandAsync(`tickingarea add circle ${structure.startPosition.x} ${structure.startPosition.y} ${structure.startPosition.z} 2 ${structure.structureSaveId} true`);
-            players[0].teleport(structure.startPosition)
-            await AwaitFunctions.waitTicks(20);
-            world.structureManager.place(structure.structureSaveId, dimension, structure.startPosition);
-            dimension.runCommandAsync(`tickingarea remove ${structure.structureSaveId}`);
+            let chunkLoaded = false;
+            while(!chunkLoaded){
+                dimension.runCommandAsync(`tickingarea add circle ${structure.startPosition.x} ${structure.startPosition.y} ${structure.startPosition.z} 2 ${structure.structureSaveId} true`);
+                players[0].teleport(structure.startPosition)
+                await AwaitFunctions.waitTicks(5);
+                try{
+                    //To see if the chunks are loaded
+                    dimension.fillBlocks(structure.startPosition, structure.startPosition, "air");
+                    world.structureManager.place(structure.structureSaveId, dimension, structure.startPosition);
+                    dimension.runCommandAsync(`tickingarea remove ${structure.structureSaveId}`);
+                    chunkLoaded = true;
+                }
+                catch{
+                    Logger.warn("Failed to place structure trying again in 5 ticks", "MapParser");
+                }
+                
+            }
+           
         }
     }
 
-     static createStructureArray = async (structureId: string, dimension: any, startLocation: Vector3, endLocation: Vector3): Promise<{structureSaveId: string, startPosition: Vector3}[]> => {
+     static createStructureArray = async (structureId: string, dimension: Dimension, startLocation: Vector3, endLocation: Vector3): Promise<{structureSaveId: string, startPosition: Vector3}[]> => {
         return new Promise(async (resolve, reject) => {
             const structureArray: {structureSaveId: string, startPosition: Vector3}[] = [];
             const maxBlockSize = 63;
@@ -237,29 +251,28 @@ export class MapParser {
                                 z: Math.min(currentStart.z + maxBlockSize, endZ)
                             };
 
-                            dimension.runCommandAsync(`tickingarea add ${currentStart.x} ${currentStart.y} ${currentStart.z} ${currentEnd.x} ${currentEnd.y} ${currentEnd.z} ${structureId} true`);
-                            await AwaitFunctions.waitTicks(10);
-                            world.structureManager.delete(`${structureId}${x}${y}${z}`);
+                            let chunkLoaded = false;
                             let tempStructure: Structure
-                            try{
-                                tempStructure = world.structureManager.createFromWorld(
-                                    `${structureId}${x}${y}${z}`,
-                                    dimension,
-                                    new BlockVolume(currentStart, currentEnd),
-                                    { includeBlocks: true }
-                                );
+                            while(!chunkLoaded) {
+
+                                dimension.runCommandAsync(`tickingarea add ${currentStart.x} ${currentStart.y} ${currentStart.z} ${currentEnd.x} ${currentEnd.y} ${currentEnd.z} ${structureId} true`);
+                                await AwaitFunctions.waitTicks(10);
+                                world.structureManager.delete(`${structureId}${x}${y}${z}`);
+                                try{
+                                    //Test if the structure is fully loaded by filling air block
+                                    dimension.fillBlocks(currentStart, currentStart, "air");
+                                    tempStructure = world.structureManager.createFromWorld(
+                                        `${structureId}${x}${y}${z}`,
+                                        dimension,
+                                        new BlockVolume(currentStart, currentEnd),
+                                        { includeBlocks: true }
+                                    );
+                                    chunkLoaded = true;
+                                }
+                                catch{
+                                    Logger.warn("Tickingarea not loaded in fully, waiting another 10 ticks and hoping for the best :)", "Preloading Maps")
+                                }
                             }
-                            catch{
-                                Logger.warn("Tickingarea not loaded in fully, waiting 40 ticks and hoping for the best :)", "Preloading Maps")
-                                await AwaitFunctions.waitTicks(30);
-                                tempStructure = world.structureManager.createFromWorld(
-                                    `${structureId}${x}${y}${z}`,
-                                    dimension,
-                                    new BlockVolume(currentStart, currentEnd),
-                                    { includeBlocks: true }
-                                );
-                            }
-                            
 
                             dimension.runCommandAsync(`tickingarea remove ${structureId}`);
                             structureArray.push({structureSaveId: tempStructure.id, startPosition: {x: x, y: y, z: z}});
