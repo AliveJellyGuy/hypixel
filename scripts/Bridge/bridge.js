@@ -1,4 +1,4 @@
-import { world, EquipmentSlot, GameMode } from "@minecraft/server";
+import { world, ItemStack, EquipmentSlot, GameMode } from "@minecraft/server";
 import { MapParser } from "MapParser/loadMap";
 import { Logger } from "staticScripts/Logger";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
@@ -76,11 +76,22 @@ export const bridgeTick = async (MapData) => {
                 if (player.location.y < MapData.startLocation.y - 10) {
                     player.kill();
                 }
+                const playerContainer = player.getComponent("inventory").container;
+                if (!(playerContainer.getItem(8))) {
+                    const bow = playerContainer.getItem(1);
+                    const durability = bow.getComponent("durability");
+                    durability.damage += 10;
+                    if (durability.maxDurability - durability.damage - 10 <= 0) {
+                        durability.damage = 0;
+                        playerContainer.setItem(8, new ItemStack("minecraft:arrow"));
+                    }
+                    playerContainer.setItem(1, bow);
+                }
             }
         }
     }
 };
-export const bridgeSpawn = async (mapData, player) => {
+export const bridgeSpawnOld = async (mapData, player) => {
     player.setGameMode(GameMode.spectator);
     const bridgeData = mapData.gameModeData;
     let randomPlayer = mapData.players[Math.floor(Math.random() * mapData.players.length)];
@@ -107,6 +118,18 @@ export const bridgeSpawn = async (mapData, player) => {
         }
     }
 };
+export const bridgeSpawn = async (mapData, player) => {
+    player.setGameMode(GameMode.spectator);
+    const bridgeData = mapData.gameModeData;
+    player.setGameMode(GameMode.survival);
+    for (const team of bridgeData.teams) {
+        if (team.players.includes(player)) {
+            player.teleport(team.spawnPoints[Math.floor(Math.random() * team.spawnPoints.length)]);
+            player.addEffect("regeneration", 200);
+            player.addEffect("saturation", 2000);
+        }
+    }
+};
 export const bridgeNextRound = async (MapData, winningMessage) => {
     Logger.log(`Starting next round`, "Bridge");
     const bridgeData = MapData.gameModeData;
@@ -127,6 +150,9 @@ export const bridgeNextRound = async (MapData, winningMessage) => {
             team.players[i].teleport(team.spawnPoints[i % team.spawnPoints.length]);
             team.players[i].onScreenDisplay.setTitle(`§a${vsMessage}${winningMessage}`, { fadeInDuration: 0, stayDuration: 100, fadeOutDuration: 0 });
             team.players[i].playSound("random.levelup");
+            team.players[i].addEffect("regeneration", 200);
+            team.players[i].addEffect("saturation", 2000);
+            team.players[i].addTag("bridge");
         }
         if (team.teamScore >= bridgeData.winsNeeded) {
             for (const player of team.players) {
@@ -148,6 +174,9 @@ export const bridgeNextRound = async (MapData, winningMessage) => {
 };
 const endBridgeRound = async (mapData) => {
     Logger.log(`End of round ${mapData.name} id: ${mapData.mapId}`, "Bridge");
+    for (const player of mapData.players) {
+        player.removeTag("bridge");
+    }
     MapParser.unlaodMap(mapData.mapId);
 };
 //#endregion

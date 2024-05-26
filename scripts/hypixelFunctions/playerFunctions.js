@@ -4,6 +4,7 @@ import { MapParser } from "MapParser/loadMap";
 import { GlobalVars } from "globalVars";
 import { Logger } from "staticScripts/Logger";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
+import { normalSpawnFunction } from "./playerSpawnHandler";
 // Define properties on hypixelValues object
 //#region Functions
 Player.prototype.getHypixelValue = function (key) {
@@ -28,6 +29,7 @@ Player.prototype.awardWin = function () {
 Player.prototype.sendToHub = function () {
     this.runCommand("clear");
     MapParser.removePlayerFromAllMaps(this);
+    this.setSpawnFunction(normalSpawnFunction.bind(null, this));
     this.teleport(GlobalVars.spawn);
 };
 // Define an array containing the valid strings

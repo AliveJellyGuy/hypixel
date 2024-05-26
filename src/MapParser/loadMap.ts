@@ -340,7 +340,7 @@ export class MapParser {
         const currentMap = currentMaps.get(mapID);
 
         for(const player of currentMap.players) {
-            player.teleport(GlobalVars.spawn)
+            player.sendToHub();
         }
 
         switch (currentMap.gameMode) {

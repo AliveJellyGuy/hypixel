@@ -4,6 +4,7 @@ import { MapParser } from "MapParser/loadMap";
 import { GlobalVars } from "globalVars";
 import { Logger, LoggerClass } from "staticScripts/Logger";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
+import { normalSpawnFunction } from "./playerSpawnHandler";
 
 // Define the PlayerValues type
 
@@ -45,6 +46,7 @@ Player.prototype.awardWin = function () {
 Player.prototype.sendToHub = function () {
     this.runCommand("clear")
     MapParser.removePlayerFromAllMaps(this);
+    this.setSpawnFunction(normalSpawnFunction.bind(null, this));
     this.teleport(GlobalVars.spawn);
 }
 //#endregion

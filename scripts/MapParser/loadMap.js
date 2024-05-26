@@ -1,7 +1,6 @@
 var _a;
 import { BlockVolume, InvalidStructureError, system, world } from "@minecraft/server";
 import { bridgeNextRound, bridgeTick } from "Bridge/bridge";
-import { GlobalVars } from "globalVars";
 import { Logger } from "staticScripts/Logger";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { TickFunctions } from "staticScripts/tickFunctions";
@@ -257,7 +256,7 @@ MapParser.unlaodMap = (mapID) => {
     }
     const currentMap = currentMaps.get(mapID);
     for (const player of currentMap.players) {
-        player.teleport(GlobalVars.spawn);
+        player.sendToHub();
     }
     switch (currentMap.gameMode) {
         case EGameMode.BRIDGE:

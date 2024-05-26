@@ -1,8 +1,7 @@
 import { world, system, GameMode } from "@minecraft/server";
 /** @type {Map<string, BlockRights>} Map(Player Tag, List of breakable blocks)*/
 const breakAllowed = new Map();
-breakAllowed.set("redBridge", { allowedBlocks: ["red_terracotta", "blue_terracotta", "white_terracotta", "tallgrass"], skylimit: 100, floorlimit: 83 });
-breakAllowed.set("blueBridge", { allowedBlocks: ["red_terracotta", "blue_terracotta", "white_terracotta", "tallgrass"], skylimit: 100, floorlimit: 83 });
+breakAllowed.set("bridge", { allowedBlocks: ["red_terracotta", "blue_terracotta", "white_terracotta", "tallgrass"], skylimit: 255, floorlimit: -255 });
 world.beforeEvents.playerBreakBlock.subscribe((eventdata) => {
     const player = eventdata.player;
     if (player.getGameMode() == GameMode.creative) {
