@@ -1,5 +1,7 @@
 import { Player, world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
+import { MapParser } from "MapParser/loadMap";
+import { GlobalVars } from "globalVars";
 import { Logger, LoggerClass } from "staticScripts/Logger";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
 
@@ -12,10 +14,12 @@ declare module "@minecraft/server" {
         getHypixelValue(key: keyof PlayerValueType): number;
         setHypixelValue(key: keyof PlayerValueType, value: number): void;
         awardWin(): void
+        sendToHub(): void
     }
 }
 
 // Define properties on hypixelValues object
+//#region Functions
 Player.prototype.getHypixelValue = function (key: keyof PlayerValueType): number {
     if (this.getDynamicProperty(key) === undefined) {
         this.setDynamicProperty(key, 0);
@@ -37,6 +41,13 @@ Player.prototype.awardWin = function () {
         this.setHypixelValue("Highest Winstreak", this.getHypixelValue("Current Winstreak"));
     }
 }
+
+Player.prototype.sendToHub = function () {
+    this.runCommand("clear")
+    MapParser.removePlayerFromAllMaps(this);
+    this.teleport(GlobalVars.spawn);
+}
+//#endregion
 
 /** 
  * If the key starts with a capital Letter, it is a public statistic
@@ -68,3 +79,4 @@ const showPlayerStats = (showHUDPlayer: Player, getPlayer: Player) => {
 }
 
 addCommand({commandName: "stats", commandPrefix: ";;", directory: "hypixel", chatFunction: ((chatSendEvent) => {showPlayerStats(chatSendEvent.sender, chatSendEvent.sender)}),})
+addCommand({commandName: "hub", commandPrefix: ";;", directory: "hypixel", chatFunction: ((chatSendEvent) => {chatSendEvent.sender.sendToHub()}),})
