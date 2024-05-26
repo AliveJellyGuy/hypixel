@@ -4,7 +4,7 @@ import { addCommand, showHUD } from "staticScripts/commandFunctions";
 import { PlayerValueType, playerValueTypeArray } from "./playerFunctions";
 import { cosmeticList } from "hypixelCosmetic/cosmeticList";
 import { lockAllCosmetics, lockCosmetic, unlockAllCosmetics, unlockCosmetic } from "hypixelCosmetic/cosmeticInventory";
-import { askForConfirmation } from "hud";
+import { askForConfirmation, choosePlayer } from "hud";
 import { switchNamehud } from "customName";
 import { Logger } from "staticScripts/Logger";
 
@@ -37,18 +37,7 @@ function isValidNumber(inputStr: string): boolean {
     return !isNaN(numericRepr) && numericRepr.toString().length === inputStr.length;
 }
 
-const choosePlayer = async (showHUDPlayer: Player) : Promise<Player> => {
-    const choosePlayerPanel = new ActionFormData();
-    choosePlayerPanel.title("Choose Player");
-    const playerNameArray= [...world.getPlayers().map((player) => player.name)];
-    for (const player of world.getPlayers()) {
-        choosePlayerPanel.button(`${player.name} (aka ${player.nameTag})`);
-    }
-    return showHUD(showHUDPlayer, choosePlayerPanel).then((response) => {
-        if(response.canceled) {return}
-        return world.getPlayers({name: playerNameArray[response.selection]})[0]
-    })
-}
+
 
 const showAdminPanel = (player: Player) => {
     Logger.log(`Showing admin panel for ${player.name}`, "Admin")

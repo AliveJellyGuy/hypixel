@@ -2,7 +2,7 @@ import { world } from '@minecraft/server';
 import { GlobalVars } from './globalVars';
 import { TickFunctions } from './staticScripts/tickFunctions';
 import { LinkedList } from 'dataTypes/linkedList';
-import { ActionFormData } from '@minecraft/server-ui';
+import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { showHUD } from 'staticScripts/commandFunctions';
 let actionbarMessages = new LinkedList();
 TickFunctions.addFunction(() => tick(), 1);
@@ -57,5 +57,36 @@ export const askForConfirmation = (player, askMessage) => {
         else {
             return false;
         }
+    });
+};
+export const choosePlayer = async (showHUDPlayer, playersToChooseFrom = world.getPlayers()) => {
+    const choosePlayerPanel = new ActionFormData();
+    choosePlayerPanel.title("Choose Player");
+    choosePlayerPanel.button("Search by name");
+    const playerNameArray = playersToChooseFrom.map((player) => player.name);
+    for (const player of world.getPlayers()) {
+        choosePlayerPanel.button(`${player.name} (aka ${player.nameTag})`);
+    }
+    return showHUD(showHUDPlayer, choosePlayerPanel).then((response) => {
+        if (response.canceled) {
+            return;
+        }
+        if (response.selection === 0) {
+            const searchPlayerPanel = new ModalFormData();
+            searchPlayerPanel.title("Search Player");
+            searchPlayerPanel.textField("Name", "Enter player name");
+            showHUD(showHUDPlayer, searchPlayerPanel).then((res) => {
+                if (res.canceled) {
+                    return;
+                }
+                const filteredPlayers = world.getPlayers().filter((player) => player.name === res.formValues[0]);
+                if (filteredPlayers.length === 0) {
+                    showHUDPlayer.sendMessage(`§cNo player found with the name ${res.formValues[0]}\nMake sure to use the name, not the nameTag/nick`);
+                    return;
+                }
+                choosePlayer(showHUDPlayer, filteredPlayers);
+            });
+        }
+        return playersToChooseFrom[response.selection - 1];
     });
 };
