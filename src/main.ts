@@ -4,6 +4,9 @@ import { Player, world, system } from "@minecraft/server";
     //Map Data
     import "MapParser/Bridge Maps/brideMaps"
 
+    //Player Functions
+    import "hypixelFunctions/playerFunctions"
+    import "staticScripts/inventoryFunctions"
 //Other
 import "hypixelFunctions/playerSpawnHandler"
 import "./betterChat";

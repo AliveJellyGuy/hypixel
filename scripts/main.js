@@ -2,6 +2,9 @@ import { world, system } from "@minecraft/server";
 //Pre load
 //Map Data
 import "MapParser/Bridge Maps/brideMaps";
+//Player Functions
+import "hypixelFunctions/playerFunctions";
+import "staticScripts/inventoryFunctions";
 //Other
 import "hypixelFunctions/playerSpawnHandler";
 import "./betterChat";
