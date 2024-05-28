@@ -14,8 +14,14 @@ declare module "@minecraft/server" {
     interface Player {
         getHypixelValue(key: keyof PlayerValueType): number;
         setHypixelValue(key: keyof PlayerValueType, value: number): void;
+
         awardWin(): void
+        awardDraw(): void
+        awardLoss(): void
+
         sendToHub(): void
+
+        
     }
 }
 
@@ -43,6 +49,17 @@ Player.prototype.awardWin = function () {
     }
 }
 
+Player.prototype.awardDraw = function () {
+    Logger.warn(`Awarding Draw to ${this.name} aka ${this.nameTag}`, "Hypixel");
+    //this.setHypixelValue("Current Winstreak", 0);
+}
+
+Player.prototype.awardLoss = function () {
+    Logger.warn(`Awarding Lose to ${this.name} aka ${this.nameTag}`, "Hypixel");
+    this.setHypixelValue("Loses", this.getHypixelValue("Loses") + 1);
+    this.setHypixelValue("Current Winstreak", 0);
+}
+
 Player.prototype.sendToHub = function () {
     this.runCommand("clear")
     MapParser.removePlayerFromAllMaps(this);
@@ -62,9 +79,10 @@ export type PlayerValueType = {
     "Highest Winstreak";
     "Current Winstreak";
     "winsCurrency";
+    "currentMatchID";
 }
 // Define an array containing the valid strings
-export const playerValueTypeArray: (keyof PlayerValueType)[] = ["winsCurrency"];
+export const playerValueTypeArray: (keyof PlayerValueType)[] = ["winsCurrency", "currentMatchID"];
 export const publicStatsTypeArray: (keyof PlayerValueType)[] = ["Wins", "Loses", "Kills", "Highest Winstreak", "Current Winstreak"];
 
 const showPlayerStats = (showHUDPlayer: Player, getPlayer: Player) => {

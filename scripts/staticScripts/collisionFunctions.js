@@ -9,7 +9,7 @@ class CollisionFunctions {
      * @param {boolean | undefined} draw
      * @returns {boolean}
      */
-    static insideBox(position, a, b, draw, particleName) {
+    static insideBox(position, a, b, draw = false, particleName = "minecraft:blue_flame_particle") {
         let boxStart = {
             x: a.x < b.x ? a.x : b.x,
             y: a.y < b.y ? a.y : b.y,

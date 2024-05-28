@@ -26,6 +26,15 @@ Player.prototype.awardWin = function () {
         this.setHypixelValue("Highest Winstreak", this.getHypixelValue("Current Winstreak"));
     }
 };
+Player.prototype.awardDraw = function () {
+    Logger.warn(`Awarding Draw to ${this.name} aka ${this.nameTag}`, "Hypixel");
+    //this.setHypixelValue("Current Winstreak", 0);
+};
+Player.prototype.awardLoss = function () {
+    Logger.warn(`Awarding Lose to ${this.name} aka ${this.nameTag}`, "Hypixel");
+    this.setHypixelValue("Loses", this.getHypixelValue("Loses") + 1);
+    this.setHypixelValue("Current Winstreak", 0);
+};
 Player.prototype.sendToHub = function () {
     this.runCommand("clear");
     MapParser.removePlayerFromAllMaps(this);
@@ -33,7 +42,7 @@ Player.prototype.sendToHub = function () {
     this.teleport(GlobalVars.spawn);
 };
 // Define an array containing the valid strings
-export const playerValueTypeArray = ["winsCurrency"];
+export const playerValueTypeArray = ["winsCurrency", "currentMatchID"];
 export const publicStatsTypeArray = ["Wins", "Loses", "Kills", "Highest Winstreak", "Current Winstreak"];
 const showPlayerStats = (showHUDPlayer, getPlayer) => {
     Logger.log(`Showing Stats to ${showHUDPlayer.name} for ${getPlayer.name}`, "Hypixel");
