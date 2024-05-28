@@ -222,7 +222,7 @@ export const bridgeNextRound = async (MapData, winningMessage) => {
             team.players[i].onScreenDisplay.setTitle(`§a${vsMessage}${winningMessage}`, { fadeInDuration: 0, stayDuration: 100, fadeOutDuration: 0 });
             team.players[i].playSound("random.levelup");
             team.players[i].addEffect("regeneration", 200);
-            team.players[i].addEffect("instant_health", 20);
+            team.players[i].addEffect("instant_health", 70);
             team.players[i].addEffect("saturation", 2000, { showParticles: false });
             team.players[i].addTag("bridge");
         }
