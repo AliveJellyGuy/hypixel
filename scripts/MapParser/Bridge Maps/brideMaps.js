@@ -20,6 +20,10 @@ export const testMap = {
     entities: [],
     gameModeData: {
         winsNeeded: 3,
+        blockPlaceArea: {
+            start: { x: 18, y: -1, z: 9 },
+            end: { x: 63, y: 18, z: 21 }
+        },
         teams: [
             {
                 playerAmount: 1,
@@ -33,7 +37,7 @@ export const testMap = {
                 spawnBarriers: [{ startPosition: { x: 9, y: 20, z: 13 }, endPosition: { x: 11, y: 20, z: 17 } }]
             },
             {
-                playerAmount: 1,
+                playerAmount: 2,
                 teamKitLocation: redKitChestLocation,
                 teamScore: 0,
                 teamName: "§4RED",
