@@ -1,3 +1,4 @@
+import { Logger } from "staticScripts/Logger";
 class Node {
     constructor(data) {
         this.data = data;
@@ -40,6 +41,7 @@ export class LinkedList {
             if (current.next.data === data) {
                 current.next = current.next.next;
                 this.size--;
+                Logger.warn(`Deleting Node: ${data}`);
                 return;
             }
             current = current.next;
@@ -95,5 +97,17 @@ export class LinkedList {
             count++;
         }
         return current;
+    }
+    some(predicate) {
+        let current = this.head;
+        let index = 0;
+        while (current) {
+            if (predicate(current.data, index)) {
+                return true;
+            }
+            current = current.next;
+            index++;
+        }
+        return false;
     }
 }

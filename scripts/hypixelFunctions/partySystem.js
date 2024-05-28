@@ -1,11 +1,16 @@
-import { ModalFormData } from "@minecraft/server-ui";
-import { addCommand, showHUD } from "staticScripts/commandFunctions";
-addCommand({ commandName: "party", chatFunction: ((event) => { createPartyWindow(event.sender); }), directory: "twla/lmao", commandPrefix: "!!" });
-const createPartyWindow = (player) => {
-    const partyWindow = new ModalFormData();
-    partyWindow.title("Invite a player!");
-    partyWindow.toggle("Did you forget to show it coder lol?");
-    showHUD(player, partyWindow).then((res) => {
-        const response = res;
-    });
+import { addCommand } from "staticScripts/commandFunctions";
+import { choosePlayer } from "hud";
+addCommand({ commandName: "partyinvite", chatFunction: ((event) => { createPartyWindow({ player: event.sender }); }), directory: "twla/lmao", commandPrefix: "!!" });
+//addCommand({commandName: "partyaccept", chatFunction: ((event) => {acceptParty(event.sender);}), directory: "twla/lmao", commandPrefix: "!!"})
+var parties = [];
+const createPartyWindow = async (params) => {
+    const sender = params.player;
+    const showHUDPlayer = params.player;
+    const res = await choosePlayer(params.player).then((player) => { return player; });
+    invitePlayer(res, sender);
 };
+function invitePlayer(invitedPlayer, invitingPlayer) {
+    invitedPlayer.sendMessage(invitingPlayer.name + " has invited you to a party!, type !!partyaccept to join");
+}
+function acceptParty(acceptingPlayer, invitingPlayer) {
+}

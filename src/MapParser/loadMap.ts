@@ -8,7 +8,7 @@ import { addCommand } from "staticScripts/commandFunctions"
 import { TickFunctions } from "staticScripts/tickFunctions"
 import { VectorFunctions } from "staticScripts/vectorFunctions"
 import { testMap } from "./Bridge Maps/brideMaps"
-import { EMapList } from "./mapList"
+import { EMapList, mapList } from "./mapList"
 
 function deepCopy(obj: any) {
     // Check if the value is an object or function, otherwise return it directly

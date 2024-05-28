@@ -3,7 +3,7 @@ import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
 import { choosePlayer } from "hud";
 
-addCommand({commandName: "partyinvite", chatFunction: ((event) => {createPartyWindow(event.sender);}), directory: "twla/lmao", commandPrefix: "!!"})
+addCommand({commandName: "partyinvite", chatFunction: ((event) => {createPartyWindow({player: event.sender})}), directory: "twla/lmao", commandPrefix: "!!"})
 //addCommand({commandName: "partyaccept", chatFunction: ((event) => {acceptParty(event.sender);}), directory: "twla/lmao", commandPrefix: "!!"})
 
 var parties = []

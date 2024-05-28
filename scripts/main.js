@@ -7,6 +7,7 @@ import "hypixelFunctions/playerFunctions";
 import "staticScripts/inventoryFunctions";
 import "MapParser/mapList";
 //Other
+import "gameCreator/lobbyManager";
 import "hypixelFunctions/partySystem";
 import "hypixelFunctions/playerSpawnHandler";
 import "./betterChat";

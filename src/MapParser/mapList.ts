@@ -11,14 +11,14 @@ export enum EMapList {
     // Add more maps as needed
 }
 
-interface IMapID{
+export interface IMapID{
     mapId: number
     mapName: string
     gameMode: EGameMode
     mapData: IMapData
 }
 
-const mapList: IMapID[] = [
+export const mapList: IMapID[] = [
     {
         mapId: 1,
         mapName: "Test Map",

@@ -1,3 +1,5 @@
+import { Logger } from "staticScripts/Logger";
+
 class Node<T> {
     data: T;
     next: Node<T> | null;
@@ -50,6 +52,7 @@ export class LinkedList<T> {
             if (current.next.data === data) {
                 current.next = current.next.next;
                 this.size--;
+                Logger.warn(`Deleting Node: ${data}`);
                 return;
             }
             current = current.next;
@@ -112,5 +115,18 @@ export class LinkedList<T> {
             count++;
         }
         return current;
+    }
+
+    some(predicate: (data: T, index: number) => boolean): boolean {
+        let current = this.head;
+        let index = 0;
+        while (current) {
+            if (predicate(current.data, index)) {
+                return true;
+            }
+            current = current.next;
+            index++;
+        }
+        return false;
     }
 }

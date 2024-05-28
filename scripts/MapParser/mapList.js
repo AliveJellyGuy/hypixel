@@ -9,7 +9,7 @@ export var EMapList;
     EMapList[EMapList["TEST"] = 1] = "TEST";
     // Add more maps as needed
 })(EMapList || (EMapList = {}));
-const mapList = [
+export const mapList = [
     {
         mapId: 1,
         mapName: "Test Map",
