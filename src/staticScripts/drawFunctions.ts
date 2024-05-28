@@ -59,7 +59,7 @@ class DrawFunctions{
      * @param {import("@minecraft/server").Vector3} b Second corner of the Box
      *  @param {MolangVariableMap | undefined} molangVars
      */
-    static drawCube(a, b, particleName?, molangVars?){
+    static drawCube(a, b, particleName = "minecraft:blue_flame_particle", molangVars?){
 
         if(!particleName){
             particleName = "minecraft:blue_flame_particle"
