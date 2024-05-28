@@ -5,7 +5,9 @@ import "MapParser/Bridge Maps/brideMaps";
 //Player Functions
 import "hypixelFunctions/playerFunctions";
 import "staticScripts/inventoryFunctions";
+import "MapParser/mapList";
 //Other
+import "hypixelFunctions/partySystem";
 import "hypixelFunctions/playerSpawnHandler";
 import "./betterChat";
 import "./Bridge/bridge";

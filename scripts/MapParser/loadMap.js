@@ -1,11 +1,10 @@
 var _a;
-import { BlockVolume, InvalidStructureError, system, world } from "@minecraft/server";
+import { BlockVolume, InvalidStructureError, world } from "@minecraft/server";
 import { bridgeStart } from "Bridge/bridge";
 import { Logger } from "staticScripts/Logger";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { TickFunctions } from "staticScripts/tickFunctions";
 import { VectorFunctions } from "staticScripts/vectorFunctions";
-import { testMap } from "./Bridge Maps/brideMaps";
 function deepCopy(obj) {
     // Check if the value is an object or function, otherwise return it directly
     if (obj === null || typeof obj !== 'object') {
@@ -177,7 +176,7 @@ MapParser.createStructureArray = async (structureId, dimension, startLocation, e
             for (let x = 0; x < endX - startX; x += maxBlockSize) {
                 for (let y = 0; y < endY - startY; y += maxBlockSize) {
                     for (let z = 0; z < endZ - startZ; z += maxBlockSize) {
-                        Logger.warn(`Saving ${structureId} at ${x} ${y} ${z}`, "MapParser");
+                        Logger.warn(`Adding ${structureId} at ${x} ${y} ${z}`, "MapParser");
                         const currentStart = { x: x + startX, y: y + startY, z: z + startZ };
                         const currentEnd = {
                             x: Math.min(currentStart.x + maxBlockSize, endX),
@@ -200,6 +199,7 @@ MapParser.createStructureArray = async (structureId, dimension, startLocation, e
                                 Logger.warn("Tickingarea not loaded in fully, waiting another 10 ticks and hoping for the best :)", "Preloading Maps");
                             }
                         }
+                        Logger.warn(`Saving ${structureId} at ${x} ${y} ${z}`, "MapParser");
                         dimension.runCommandAsync(`tickingarea remove ${structureId}`);
                         structureArray.push({ structureSaveId: tempStructure.id, startPosition: { x: x, y: y, z: z } });
                     }
@@ -306,20 +306,3 @@ MapParser.saveMap = (bL1, bL2) => {
     }
     console.warn(combinedString);
 };
-//It complains that it is not initialised, very sad
-const mapList = [
-//testMap
-];
-var EMapList;
-(function (EMapList) {
-    EMapList[EMapList["TEST"] = 0] = "TEST";
-})(EMapList || (EMapList = {}));
-const preloadMaps = async () => {
-    Logger.warn("Loading Map");
-    testMap.structures = await MapParser.createStructureArray(testMap.structureId, world.getDimension("overworld"), testMap.startLocation, testMap.endLocation);
-    Logger.warn("Done Loading Map");
-    MapParser.loadMap(testMap, { x: 100, y: 50, z: 100 }, world.getAllPlayers());
-};
-system.run(() => {
-    preloadMaps();
-});
