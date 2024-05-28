@@ -1,5 +1,5 @@
 import { BlockPermutation, BlockVolume, BlockVolumeBase, Dimension, InvalidStructureError, Player, Structure, StructureManager, Vector3, system, world } from "@minecraft/server"
-import { IBridgeData, Kit,  bridgeNextRound, bridgeTick } from "Bridge/bridge"
+import { IBridgeData, Kit,  bridgeNextRound, bridgeStart, bridgeTick } from "Bridge/bridge"
 import { GlobalVars } from "globalVars"
 
 import { Logger } from "staticScripts/Logger"
@@ -78,6 +78,8 @@ world.structureManager.delete("mapparser:airStruct");
 const airStruct = world.structureManager.createEmpty("mapparser:airStruct", {x: 64, y: 64, z: 64});
 export class MapParser {
 
+    static currentMaps = new Map<number, IMapData>();
+
     //#region Loading Functions
 
     static loadMapById = async (mapId: EMapList, offset: Vector3, Players: Player[]) => {
@@ -93,7 +95,7 @@ export class MapParser {
 
         //find free index
         let findIndex = 0;
-        while (currentMaps.has(findIndex)) {
+        while (this.currentMaps.has(findIndex)) {
             findIndex++;
         }
         //Manage Players
@@ -127,6 +129,7 @@ export class MapParser {
         
         for(const player of players){
             player.setSpawnFunction(mapDataCopy.playerSpawnFunction.bind(null, mapDataCopy, player));
+            player.setHypixelValue("currentMatchID", findIndex);
         }
         
 
@@ -135,45 +138,12 @@ export class MapParser {
         //load game mode data
         switch(mapDataCopy.gameMode) {
             case EGameMode.BRIDGE:
-                const bridgeData = mapDataCopy.gameModeData as IBridgeData;
-                let currentPlayerIndex = 0;
-                for(const team of bridgeData.teams) {
-                    for(let i = 0; i < team.playerAmount; i++) {
-                        if(currentPlayerIndex >= players.length) {
-                            break;
-                        }
-                        const player = players[currentPlayerIndex];
-                        currentPlayerIndex++;
-                        team.players.push(player);
-                       
-                    } 
-
-                    //Add offset to capture points
-                    for(const capturePoint of team.capturePoints) {
-                        capturePoint.startPosition = VectorFunctions.addVector(capturePoint.startPosition, offset);
-                        capturePoint.endPosition = VectorFunctions.addVector(capturePoint.endPosition, offset);
-                    }
-
-                    //Add offset to spawn barriers
-                    for(const spawnBarrier of team.spawnBarriers) {
-                        spawnBarrier.startPosition = VectorFunctions.addVector(spawnBarrier.startPosition, offset);
-                        spawnBarrier.endPosition = VectorFunctions.addVector(spawnBarrier.endPosition, offset);
-                    }
-
-                    //Add offset to spawn points
-                    // Add offset to spawn points
-                    for (let i = 0; i < team.spawnPoints.length; i++) {
-                        team.spawnPoints[i] = VectorFunctions.addVector(team.spawnPoints[i], offset);
-                    }
-                }
-
-                mapDataCopy.tickFunctionId = TickFunctions.addFunction(bridgeTick.bind(this, mapDataCopy), 5)
-                bridgeNextRound(mapDataCopy, "Round start!")
+                bridgeStart(mapDataCopy, offset);
         }
 
         mapDataCopy.mapId = findIndex;
         //Save the map
-        currentMaps.set(findIndex, mapDataCopy);   
+        this.currentMaps.set(findIndex, mapDataCopy);   
 
     }
     //#endregion 
@@ -333,14 +303,16 @@ export class MapParser {
     static unlaodMap = (mapID: number) => {
         Logger.warn("UN LOADING MAP", "MapParser");
         const overworld = world.getDimension("overworld");
-        if(!currentMaps.has(mapID)) {
+        if(!this.currentMaps.has(mapID)) {
             Logger.warn(`Map ${mapID} not found`, "MapParser");
             return;
         }
-        const currentMap = currentMaps.get(mapID);
+        const currentMap = this.currentMaps.get(mapID);
+
 
         for(const player of currentMap.players) {
             player.sendToHub();
+            player.setHypixelValue("winsCurrency", -1);
         }
 
         switch (currentMap.gameMode) {
@@ -358,19 +330,19 @@ export class MapParser {
         }
         //THIS DOESNT WORK SINC EFILL BLOCK LIMIT IS 32000 OR SMTHN
         //overworld.fillBlocks(currentMap.startLocation, currentMap.endLocation, "air");
-        currentMaps.delete(mapID);
+        this.currentMaps.delete(mapID);
     }
 
     static removePlayerFromAllMaps = (player: Player) => {
         Logger.log(`Removing Player ${player.name} from all maps`, "MapParser");
-        for(const map of currentMaps.values()) {
+        for(const map of this.currentMaps.values()) {
             MapParser.removePlayerFromMap(map.mapId, player);
         }
     }
 
     static removePlayerFromMap = (mapID: number, player: Player) => {
         Logger.log(`Removing Player ${player.name} from Map ${mapID}`, "MapParser");
-        const currentMap = currentMaps.get(mapID);
+        const currentMap = this.currentMaps.get(mapID);
         currentMap.players = currentMap.players.filter(p => p !== player);
         if(currentMap.players.length <= 1) {
             for(const player of currentMap.players) {
@@ -432,10 +404,6 @@ export class MapParser {
     }
     //#endregion
 }
-
-const currentMaps = new Map<number, IMapData>();
-
-
 
 
 //It complains that it is not initialised, very sad

@@ -1,8 +1,10 @@
 import { Player, world, system, ItemStack, Component, EnchantmentTypes, Vector3, Vector2, EquipmentSlot, CompoundBlockVolume, BlockVolume, GameMode } from "@minecraft/server";
-import { IMapData, MapParser } from "MapParser/loadMap";
+import { EGameMode, IMapData, MapParser } from "MapParser/loadMap";
 import { Logger } from "staticScripts/Logger";
 import { AwaitFunctions } from "staticScripts/awaitFunctions";
 import { CollisionFunctions } from "staticScripts/collisionFunctions";
+import { TickFunctions } from "staticScripts/tickFunctions";
+import { VectorFunctions } from "staticScripts/vectorFunctions";
 
 
 const players = world.getAllPlayers();
@@ -76,6 +78,10 @@ export class Kit{
 
 export interface IBridgeData {
     winsNeeded: number,
+    blockPlaceArea: {
+        start: Vector3,
+        end: Vector3
+    }
     teams: {
         teamName: string,
         teamKitLocation: Vector3,
@@ -97,6 +103,48 @@ export interface IBridgeData {
 }
 
 //#region Bridge gamemode functions
+
+export const bridgeStart = async (mapData: IMapData, offset: Vector3) => {
+    const bridgeData = mapData.gameModeData as IBridgeData;
+    let currentPlayerIndex = 0;
+
+    bridgeData.blockPlaceArea.start = VectorFunctions.addVector(bridgeData.blockPlaceArea.start, offset);
+    bridgeData.blockPlaceArea.end = VectorFunctions.addVector(bridgeData.blockPlaceArea.end, offset);
+
+    for(const team of bridgeData.teams) {
+        for(let i = 0; i < team.playerAmount; i++) {
+            if(currentPlayerIndex >= players.length) {
+                break;
+            }
+            const player = players[currentPlayerIndex];
+            currentPlayerIndex++;
+            team.players.push(player);
+            
+        } 
+
+        //Add offset to capture points
+        for(const capturePoint of team.capturePoints) {
+            capturePoint.startPosition = VectorFunctions.addVector(capturePoint.startPosition, offset);
+            capturePoint.endPosition = VectorFunctions.addVector(capturePoint.endPosition, offset);
+        }
+
+        //Add offset to spawn barriers
+        for(const spawnBarrier of team.spawnBarriers) {
+            spawnBarrier.startPosition = VectorFunctions.addVector(spawnBarrier.startPosition, offset);
+            spawnBarrier.endPosition = VectorFunctions.addVector(spawnBarrier.endPosition, offset);
+        }
+
+        //Add offset to spawn points
+        // Add offset to spawn points
+        for (let i = 0; i < team.spawnPoints.length; i++) {
+            team.spawnPoints[i] = VectorFunctions.addVector(team.spawnPoints[i], offset);
+        }
+    }
+
+    mapData.tickFunctionId = TickFunctions.addFunction(bridgeTick.bind(this, mapData), 5)
+    bridgeNextRound(mapData, "Round start!")
+}
+
 export const bridgeTick = async (MapData: IMapData) => {
     const bridgeData = MapData.gameModeData as IBridgeData;
     
@@ -116,13 +164,30 @@ export const bridgeTick = async (MapData: IMapData) => {
                     }
                 }
                 if(player.location.y < MapData.startLocation.y - 10){
-                    player.kill();
+                    player.teleport(team.spawnPoints[Math.floor(Math.random() * team.spawnPoints.length)]);
+                    player.addEffect("instant_health", 20);
+                    new Kit(team.teamKitLocation).giveplayerKit(player);
                 }
                 const playerContainer = player.getComponent("inventory").container;
-                if(!(playerContainer.getItem(8))){
-                    const bow = playerContainer.getItem(1);
+                if(!(player.hasItem("arrow"))){
+                    let bowSlot = 0;
+                    let bow : ItemStack = null;
+                    for(bowSlot = 0; bowSlot < 8; bowSlot++){
+                        let currentItem = playerContainer.getItem(bowSlot);
+                        if(!currentItem) {continue;}
+                        if(currentItem.typeId.includes("bow")){
+                            bow = currentItem
+                            break;
+                        }
+
+                    }
+                    if(bow == null) {
+                        player.sendMessage("§dAyo where did you put your bow")
+                        continue;
+                    }
+                    if(bow.hasComponent("durability") == false){continue;}
                     const durability = bow.getComponent("durability");
-                    durability.damage += 10;
+                    durability.damage += 15;
                     if(durability.maxDurability - durability.damage - 10 <= 0){
                         durability.damage = 0;
                         playerContainer.setItem(8, new ItemStack("minecraft:arrow"));
@@ -174,7 +239,9 @@ export const bridgeSpawn = async (mapData: IMapData, player: Player) => {
         if(team.players.includes(player)){
             player.teleport(team.spawnPoints[Math.floor(Math.random() * team.spawnPoints.length)]);
             player.addEffect("regeneration", 200);
-            player.addEffect("saturation", 2000);
+            player.addEffect("instant_health", 20);
+            player.addEffect("saturation", 2000, {showParticles: false});
+            new Kit(team.teamKitLocation).giveplayerKit(player);
         }
     }
     
@@ -196,6 +263,21 @@ export const bridgeNextRound = async (MapData: IMapData, winningMessage: string)
 
     const overworld = world.getDimension("overworld");
     for(const team of bridgeData.teams) {
+        if(team.teamScore >= bridgeData.winsNeeded){
+            for(const player of team.players){
+                player.awardWin();
+            }
+            for(const enemyTeam of bridgeData.teams){
+                if(enemyTeam.teamName != team.teamName){
+                    for(const player of enemyTeam.players){
+                        player.awardLoss();
+                    }
+                }
+            }
+            gameEnd = true;
+            break;
+        }
+
         for(const spawnBarriers of team.spawnBarriers) {
             overworld.fillBlocks(spawnBarriers.startPosition, spawnBarriers.endPosition, team.spawnBarrierBlockTypeID)
         }
@@ -205,15 +287,11 @@ export const bridgeNextRound = async (MapData: IMapData, winningMessage: string)
             team.players[i].onScreenDisplay.setTitle(`§a${vsMessage}${winningMessage}`, {fadeInDuration: 0, stayDuration: 100, fadeOutDuration: 0});
             team.players[i].playSound("random.levelup");
             team.players[i].addEffect("regeneration", 200);
-            team.players[i].addEffect("saturation", 2000);
+            team.players[i].addEffect("instant_health", 20);
+            team.players[i].addEffect("saturation", 2000, {showParticles: false});
             team.players[i].addTag("bridge");
         }
-        if(team.teamScore >= bridgeData.winsNeeded){
-            for(const player of team.players){
-                player.awardWin();
-            }
-            gameEnd = true;
-        }
+        
     }
 
     if(gameEnd) {
@@ -238,5 +316,42 @@ const endBridgeRound = async (mapData: IMapData) => {
     }
     MapParser.unlaodMap(mapData.mapId);
 }
+
+//#endregion
+
+//#region Bridge gamemode events
+
+world.afterEvents.itemCompleteUse.subscribe((eventData) => {
+    const item = eventData.itemStack;
+    const player = eventData.source;
+    if(player.hasTag("bridge")){
+        if(item.typeId.includes("golden_apple")){
+            player.addEffect("instant_health", 10);
+            player.removeEffect("regeneration");
+            player.removeEffect("absorption");
+            player.addEffect("absorption", 2400, {showParticles: false});
+            world.sendMessage("GAPPLE")
+        }
+    }
+
+})
+
+world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
+    const player = eventData.player;
+    const block = eventData.block;
+    if(player.hasTag("bridge")){
+        const mapData = MapParser.currentMaps.get(player.getHypixelValue("currentMatchID"));
+        if(mapData.gameMode != EGameMode.BRIDGE){
+            Logger.warn(`${player.name} has bridge tag but isn't in a bridge gamemode`, "Bridge")
+            return;
+        }
+        const bridgeData = mapData.gameModeData as IBridgeData;
+        if(!CollisionFunctions.insideBox(block.location, bridgeData.blockPlaceArea.start, bridgeData.blockPlaceArea.end)){
+            player.sendMessage(`§cYou can't place blocks here!`);
+            eventData.cancel = true;
+        }
+
+    }
+})
 
 //#endregion
