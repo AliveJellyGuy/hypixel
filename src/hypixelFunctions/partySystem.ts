@@ -7,7 +7,11 @@ addCommand({commandName: "party", chatFunction: ((event) => {createPartyWindow(e
 const createPartyWindow = (player: Player) => {
     const partyWindow = new ModalFormData()
     partyWindow.title("Invite a player!")
-    
+    partyWindow.toggle("Did you forget to show it coder lol?")
+
+    showHUD(player, partyWindow).then((res) => {
+        const response = res
+    })
 
 
 
