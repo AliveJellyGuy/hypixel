@@ -4,12 +4,12 @@ import { Logger } from "staticScripts/Logger"; // Adjust the path as necessary
 import { showHUD } from "staticScripts/commandFunctions";
 // Initialize settings keys
 const settingsKeys = ["doNotDisturb", "exampleNumberType"];
+const defaultSettings = {
+    doNotDisturb: false,
+    exampleNumberType: 0,
+};
 // Method to initialize default settings if they are not present
 function initializeSettings(player) {
-    const defaultSettings = {
-        doNotDisturb: false,
-        exampleNumberType: 0,
-    };
     settingsKeys.forEach((key) => {
         if (player.getDynamicProperty(key) === undefined) {
             player.setDynamicProperty(key, defaultSettings[key]);

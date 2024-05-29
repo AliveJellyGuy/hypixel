@@ -18,13 +18,14 @@ declare module "@minecraft/server" {
 
 // Initialize settings keys
 const settingsKeys: (keyof Settings)[] = ["doNotDisturb", "exampleNumberType"];
+const defaultSettings: Settings = {
+    doNotDisturb: false,
+    exampleNumberType: 0,
+};
 
 // Method to initialize default settings if they are not present
 function initializeSettings(player: Player) {
-    const defaultSettings: Settings = {
-        doNotDisturb: false,
-        exampleNumberType: 0,
-    };
+    
 
     settingsKeys.forEach((key) => {
         if (player.getDynamicProperty(key) === undefined) {
