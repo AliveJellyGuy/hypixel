@@ -8,6 +8,7 @@ import { Player, world, system } from "@minecraft/server";
     import "hypixelFunctions/playerFunctions"
     import "staticScripts/inventoryFunctions"
     import "MapParser/mapList"
+    import "hypixelFunctions/playerSettings"
 //Other
 import "gameCreator/lobbyManager"
 import "hypixelFunctions/partySystem"

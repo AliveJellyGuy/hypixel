@@ -92,6 +92,9 @@ export class MapParser {
         const dimension = world.getDimension("overworld");
         const mapDataCopy = deepCopy(mapData) as IMapData;
 
+        for(const player of players) {
+            MapParser.removePlayerFromAllMaps(player);
+        }
         //Logger.warn(JSON.stringify(world.structureManager.getWorldStructureIds()))
 
         //find free index

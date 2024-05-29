@@ -46,6 +46,9 @@ MapParser.loadMap = async (mapData, offset, players) => {
     Logger.warn(`Loading Map: ${mapData.name}`, "MapParser");
     const dimension = world.getDimension("overworld");
     const mapDataCopy = deepCopy(mapData);
+    for (const player of players) {
+        _a.removePlayerFromAllMaps(player);
+    }
     //Logger.warn(JSON.stringify(world.structureManager.getWorldStructureIds()))
     //find free index
     let findIndex = 0;

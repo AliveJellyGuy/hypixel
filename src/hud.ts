@@ -86,7 +86,7 @@ export const askForConfirmation = (player: Player, askMessage: string) : Promise
 }
 
 
-export const choosePlayer = async (showHUDPlayer: Player, playersToChooseFrom = world.getPlayers()) : Promise<Player> => {
+export const choosePlayer = async (showHUDPlayer: Player, ignoreSelf: boolean = false, playersToChooseFrom = world.getPlayers()) : Promise<Player> => {
     const choosePlayerPanel = new ActionFormData();
     choosePlayerPanel.title("Choose Player");
     choosePlayerPanel.button("Search by name");
@@ -107,7 +107,7 @@ export const choosePlayer = async (showHUDPlayer: Player, playersToChooseFrom = 
                     showHUDPlayer.sendMessage(`§cNo player found with the name ${res.formValues[0]}\nMake sure to use the name, not the nameTag/nick`)
                     return;
                 }
-                choosePlayer(showHUDPlayer, filteredPlayers);
+                choosePlayer(showHUDPlayer, ignoreSelf, filteredPlayers);
             });
         }
         return playersToChooseFrom[response.selection - 1]

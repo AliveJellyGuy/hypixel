@@ -59,7 +59,7 @@ export const askForConfirmation = (player, askMessage) => {
         }
     });
 };
-export const choosePlayer = async (showHUDPlayer, playersToChooseFrom = world.getPlayers()) => {
+export const choosePlayer = async (showHUDPlayer, ignoreSelf = false, playersToChooseFrom = world.getPlayers()) => {
     const choosePlayerPanel = new ActionFormData();
     choosePlayerPanel.title("Choose Player");
     choosePlayerPanel.button("Search by name");
@@ -84,7 +84,7 @@ export const choosePlayer = async (showHUDPlayer, playersToChooseFrom = world.ge
                     showHUDPlayer.sendMessage(`§cNo player found with the name ${res.formValues[0]}\nMake sure to use the name, not the nameTag/nick`);
                     return;
                 }
-                choosePlayer(showHUDPlayer, filteredPlayers);
+                choosePlayer(showHUDPlayer, ignoreSelf, filteredPlayers);
             });
         }
         return playersToChooseFrom[response.selection - 1];
