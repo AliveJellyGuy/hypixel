@@ -42,7 +42,7 @@ Player.prototype.sendToHub = function () {
     this.teleport(GlobalVars.spawn);
 };
 // Define an array containing the valid strings
-export const playerValueTypeArray = ["winsCurrency", "currentMatchID"];
+export const playerValueTypeArray = ["winsCurrency", "currentMatchID", "currentLobbyID"];
 export const publicStatsTypeArray = ["Wins", "Loses", "Kills", "Highest Winstreak", "Current Winstreak"];
 const showPlayerStats = (showHUDPlayer, getPlayer) => {
     Logger.log(`Showing Stats to ${showHUDPlayer.name} for ${getPlayer.name}`, "Hypixel");

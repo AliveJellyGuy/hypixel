@@ -3,6 +3,7 @@ import { MapParser } from "MapParser/loadMap";
 import { mapList } from "MapParser/mapList";
 import { LinkedList } from "dataTypes/linkedList";
 import { askForConfirmation, choosePlayer } from "hud";
+import { Logger } from "staticScripts/Logger";
 import { addCommand, showHUD } from "staticScripts/commandFunctions";
 const lobbys = new LinkedList();
 const mapSelector = async (showHudPlayer) => {
@@ -27,9 +28,10 @@ const createLobby = async (hostPlayer, otherPlayers) => {
     const createLobbyInitialScreen = new ModalFormData();
     createLobbyInitialScreen.title("Create Lobby");
     createLobbyInitialScreen.toggle("Public", false);
+    createLobbyInitialScreen.toggle("Invite Only", false);
     createLobbyInitialScreen.textField("Lobby Name", "Lobby Name", `${hostPlayer.name}'s lobby`);
     createLobbyInitialScreen.textField("Lobby Password", "Lobby Password", "");
-    showHUD(hostPlayer, createLobbyInitialScreen).then(async (res) => {
+    await showHUD(hostPlayer, createLobbyInitialScreen).then(async (res) => {
         if (res.canceled) {
             return;
         }
@@ -37,8 +39,9 @@ const createLobby = async (hostPlayer, otherPlayers) => {
             selectedMap: await mapSelector(hostPlayer),
             lobbyId: findID,
             publicLobby: res.formValues[0],
-            lobbyName: res.formValues[1],
-            lobbyPassword: res.formValues[2],
+            inviteOnly: res.formValues[1],
+            lobbyName: res.formValues[2],
+            lobbyPassword: res.formValues[3],
             hostPlayer: hostPlayer,
             otherPlayers: otherPlayers
         };
@@ -48,7 +51,74 @@ const createLobby = async (hostPlayer, otherPlayers) => {
     createLobbyMainScreen(lobbyData);
 };
 addCommand({ commandName: "createLobby", chatFunction: ((event) => { createLobby(event.sender, []); }), directory: "twla/lmao", commandPrefix: ";;" });
+const browseLobbys = async (searchingPlayer) => {
+    const lobbyListHud = new ActionFormData();
+    lobbyListHud.title("Lobby List");
+    lobbys.forEach(lobby => {
+        if (!lobby.publicLobby) {
+            return;
+        }
+        lobbyListHud.button(lobby.lobbyName);
+    });
+    await showHUD(searchingPlayer, lobbyListHud).then((res) => {
+        if (res.canceled) {
+            return;
+        }
+        const lobby = lobbys.getNodebyIndex(res.selection).data;
+        lobbyPasswordCheck(searchingPlayer, lobby);
+    });
+};
+addCommand({ commandName: "browseLobbys", chatFunction: ((event) => { browseLobbys(event.sender); }), directory: "twla/lmao", commandPrefix: ";;" });
+const joinLobbyManually = async (searchingPlayer) => {
+    const joinLobbyHud = new ModalFormData();
+    joinLobbyHud.title("Enter Lobby Name");
+    joinLobbyHud.textField("Lobby Name", "Lobby Name", "");
+    await showHUD(searchingPlayer, joinLobbyHud).then((res) => {
+        if (res.canceled) {
+            return;
+        }
+        const lobby = lobbys.find(lobby => lobby.lobbyName === res.formValues[0]);
+        if (lobby == null) {
+            searchingPlayer.sendMessage(`§cCouldn't find Lobby with name ${res.formValues[0]}.`);
+            return;
+        }
+        lobbyPasswordCheck(searchingPlayer, lobby);
+    });
+};
+addCommand({ commandName: "joinLobbyManually", chatFunction: ((event) => { joinLobbyManually(event.sender); }), directory: "twla/lmao", commandPrefix: ";;" });
+const lobbyPasswordCheck = async (joiningPlayer, lobbyData) => {
+    if (lobbyData.inviteOnly) {
+        joiningPlayer.sendMessage(`§cThis lobby is invite only.`);
+        return;
+    }
+    if (lobbyData.lobbyPassword === "") {
+        lobbyData.otherPlayers.push(joiningPlayer);
+        joiningPlayer.sendMessage(`§aSuccessfully joined the lobby.`);
+        lobbyData.hostPlayer.sendMessage(`§a${joiningPlayer.name} joined the lobby.`);
+        Logger.warn(`${joiningPlayer.name} joined ${lobbyData.lobbyName} `, "LobbyManager");
+        return;
+    }
+    const passwordInput = new ModalFormData();
+    passwordInput.title(`Enter lobby password for ${lobbyData.lobbyName})`);
+    passwordInput.textField("Lobby Password", "Lobby Password", "");
+    await showHUD(joiningPlayer, passwordInput).then((res) => {
+        if (res.canceled) {
+            return;
+        }
+        if (res.formValues[0] === lobbyData.lobbyPassword) {
+            lobbyData.otherPlayers.push(joiningPlayer);
+            joiningPlayer.sendMessage(`§aSuccessfully joined the lobby.`);
+            lobbyData.hostPlayer.sendMessage(`§a${joiningPlayer.name} joined the lobby.`);
+            Logger.warn(`${joiningPlayer.name} joined ${lobbyData.lobbyName} `, "LobbyManager");
+            return;
+        }
+        else {
+            joiningPlayer.sendMessage(`§cIncorrect password. Please try again.`);
+        }
+    });
+};
 const createLobbyMainScreen = async (lobbyData) => {
+    Logger.warn("Lobby Main Screen", "LobbyManager");
     let lobbyClosed = false;
     const lobbyMainScreen = new ActionFormData();
     lobbyMainScreen.title("Lobby Main Screen");

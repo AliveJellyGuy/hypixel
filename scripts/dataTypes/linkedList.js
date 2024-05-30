@@ -110,4 +110,16 @@ export class LinkedList {
         }
         return false;
     }
+    find(predicate) {
+        let current = this.head;
+        let index = 0;
+        while (current) {
+            if (predicate(current.data, index)) {
+                return current.data;
+            }
+            current = current.next;
+            index++;
+        }
+        return null;
+    }
 }

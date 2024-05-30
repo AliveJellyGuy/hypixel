@@ -80,9 +80,10 @@ export type PlayerValueType = {
     "Current Winstreak";
     "winsCurrency";
     "currentMatchID";
+    "currentLobbyID";
 }
 // Define an array containing the valid strings
-export const playerValueTypeArray: (keyof PlayerValueType)[] = ["winsCurrency", "currentMatchID"];
+export const playerValueTypeArray: (keyof PlayerValueType)[] = ["winsCurrency", "currentMatchID", "currentLobbyID"];
 export const publicStatsTypeArray: (keyof PlayerValueType)[] = ["Wins", "Loses", "Kills", "Highest Winstreak", "Current Winstreak"];
 
 const showPlayerStats = (showHUDPlayer: Player, getPlayer: Player) => {
