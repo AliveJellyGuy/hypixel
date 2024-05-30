@@ -1,5 +1,5 @@
 import { world } from "@minecraft/server";
-import { customName } from "./customName";
+//import { customName } from "./customName";
 import { AwaitFunctions } from "./staticScripts/awaitFunctions";
 //import { oldParkour } from "./checkpoints";
 import { playerLeft } from "./scoreboard";
@@ -11,7 +11,7 @@ world.afterEvents.playerSpawn.subscribe(async (eventData) => {
     if (initialSpawn) {
         GlobalVars.getPlayers();
     }
-    customName.playerJoin(player);
+    //customName.playerJoin(player)
 });
 /**
  * @type {Player}

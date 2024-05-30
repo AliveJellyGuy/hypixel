@@ -1,5 +1,5 @@
 import { DisplaySlotId, ObjectiveSortOrder, Player, ScoreboardIdentity, ScoreboardObjective, system, world }from "@minecraft/server";
-import { customName } from "./customName";
+//import { customName } from "./customName";
 import { AwaitFunctions } from "./staticScripts/awaitFunctions";
 import { Logger } from "./staticScripts/Logger";
 //import { oldParkour } from "./checkpoints";
@@ -14,7 +14,7 @@ world.afterEvents.playerSpawn.subscribe(async (eventData) => {
     if(initialSpawn){
         GlobalVars.getPlayers()
     }
-    customName.playerJoin(player)
+    //customName.playerJoin(player)
 })
 
 

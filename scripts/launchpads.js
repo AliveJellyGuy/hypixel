@@ -58,7 +58,7 @@ class Launchpad extends BookData {
             const launchpadVars = __classPrivateFieldGet(this, _Launchpad_launchpadVarsArr, "f")[i];
             for (const player of GlobalVars.players) {
                 //world.sendMessage(`${CollisionFunctions.insideBox(player.location, launchpadVars.startLoc, launchpadVars.endLoc)}`)
-                if (CollisionFunctions.insideBox(player.location, launchpadVars.startLoc, launchpadVars.endLoc, true, this.molangVars)) {
+                if (CollisionFunctions.insideBox(player.location, launchpadVars.startLoc, launchpadVars.endLoc, true)) {
                     let playerVel = player.getVelocity();
                     let speed = VectorFunctions.vectorLength({ x: playerVel.x, y: 0, z: playerVel.z });
                     if (speed < 1) {

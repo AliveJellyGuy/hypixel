@@ -1,8 +1,7 @@
-import { world, MinecraftBlockTypes } from "@minecraft/server";
+import { BlockTypes, world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 
-var allBlocks = MinecraftBlockTypes.getAllBlockTypes();
-import { undoBlocks, undoCounter, undoAdd, undoSave, deleteRow, sortLength, search } from "./mainFake.js"
+var allBlocks = BlockTypes.getAll()
 var paintReplace = [];
 
 var paintBlocks;
@@ -12,28 +11,32 @@ var paintRange = 0;
 var paintBlocksAffected = 0;
 
 
-world.events.itemUse.subscribe(async (eventData) => {
+world.beforeEvents.itemUse.subscribe(async (eventData) => {
+    return
     const player = eventData.source;
-    if (player.hasTag("Admin") == true, eventData.item.typeId == "minecraft:wooden_pickaxe") {
+    if (player.hasTag("Admin") == true, eventData.itemStack.typeId == "minecraft:wooden_pickaxe") {
         if (paintRange == 0 || player.isSneaking) {
             paintUi(player);
 
         }
         else {
-            deleteRow(undoBlocks, undoCounter);
-            deleteRow(undoBlocksType, undoCounter);
+            //This does not work with the new changes
+            //deleteRow(undoBlocks, undoCounter);
+           // deleteRow(undoBlocksType, undoCounter);
         }
         world.sendMessage(`§dLeft click a block when your done painting to save it => Then your also able to ;;undo!`)
     }
 
 });
 
-world.events.itemUseOn.subscribe(async (eventData) => {
+world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
+    return
     const player = eventData.source;
     const block = player.getBlockFromViewDirection();
+    const blockLocation = block.block.location;
 
 
-    if (player.hasTag("Admin") == true, eventData.item.typeId == "minecraft:wooden_pickaxe") {
+    if (player.hasTag("Admin") == true, eventData.itemStack.typeId == "minecraft:wooden_pickaxe") {
 
         try {
             var percentMsgReplace = [];
@@ -72,10 +75,10 @@ world.events.itemUseOn.subscribe(async (eventData) => {
                                 //  world.sendMessage("" + percentMsgReplace.length)
                                 // world.sendMessage(`RNG: ${x} Contition <= ${(percentMsgReplace[i] + iCounterReplace)} and > ${iCounterReplace}`)
                                 if (x <= percentMsgReplace[i] + iCounterReplace && x >= iCounterReplace) {
-                                    undoAdd(offsetBlock, paintBlocksAffected)
-                                    console.warn(`saved under ${undoBlocks[undoCounter][paintBlocksAffected].typeId} at ${undoCounter} ${paintBlocksAffected}`)
-                                    paintBlocksAffected++;
-                                    world.getDimension("overworld").fillBlocks(offsetBlock.location, offsetBlock.location, MinecraftBlockTypes.get("minecraft:" + blockMsgReplace[i]));
+                                    //undoAdd(offsetBlock, paintBlocksAffected)
+                                    //console.warn(`saved under ${undoBlocks[undoCounter][paintBlocksAffected].typeId} at ${undoCounter} ${paintBlocksAffected}`)
+                                    //paintBlocksAffected++;
+                                    //world.getDimension("overworld").fillBlocks(offsetBlock.location, offsetBlock.location, MinecraftBlockTypes.get("minecraft:" + blockMsgReplace[i]));
 
                                 }
                                 iCounterReplace += percentMsgReplace[i];
@@ -95,7 +98,7 @@ world.events.itemUseOn.subscribe(async (eventData) => {
 
 });
 
-world.events.blockBreak.subscribe((eventData) => {
+world.afterEvents.playerBreakBlock.subscribe((eventData) => {
     const block = eventData.block;
     const blockRe = eventData.brokenBlockPermutation
     const player = eventData.player;
@@ -104,18 +107,20 @@ world.events.blockBreak.subscribe((eventData) => {
         world.getDimension("overworld").fillBlocks(block.location, block.location, blockRe);
         if (paintBlocksAffected != 0) {
             world.sendMessage(`Blocks saved: ${paintBlocksAffected}`)
-            undoSave(paintBlocksAffected);
+            //Still doesnt work with new changes
+            //undoSave(paintBlocksAffected);
             resetPaint();
         }
     }
 });
 
-world.events.beforeChat.subscribe((eventData) => {
-    var msg = eventData.message;
-    var msgSplit = msg.split(" ")
+world.beforeEvents.chatSend.subscribe((eventData) => {
+    return
+    let msg = eventData.message;
+    let msgSplit = msg.split(" ")
     if (msgSplit[0] == ";;paint") {
         eventData.cancel = true;
-        paintRange = Math.abs(Math.floor(msgSplit[1]))
+        paintRange = parseInt(msgSplit[1])
 
         paintReplace = msgSplit[2].split(",");
 
@@ -140,14 +145,14 @@ async function paintUi(player) {
     //  import { player } from "./main.js"
 
     var resultRange = await range.show(player);
-    paintRange = resultRange.formValues[0];
+    paintRange = resultRange.formValues[0] as number;
 
     var userBusy;
     var reSearch = false;
     var resultBlockChoose;
     var searchResult = [];
 
-    for (var i = 0; i < resultRange.formValues[1]; i++) {
+    for (var i = 0; i < (resultRange.formValues[1] as number); i++) {
         do {
             searchResult = [];
             reSearch = false;

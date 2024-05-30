@@ -26,5 +26,5 @@ function saveStructureAtCoordinates(x, y, z) {
     console.log(`Structure saved at coordinates: (${x}, ${y}, ${z})`);
 }
 addCommand({ commandName: "save", commandPrefix: ";;", permissions: ["admin"], directory: "saveStructure", chatFunction: (chatSendEvent) => {
-        saveStructure(chatSendEvent.sender, chatSendEvent.sender);
+        saveStructure(chatSendEvent);
     }, });

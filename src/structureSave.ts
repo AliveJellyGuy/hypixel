@@ -36,5 +36,5 @@ function saveStructureAtCoordinates(x: number, y: number, z: number) {
 
 
 addCommand({commandName: "save", commandPrefix: ";;", permissions: ["admin"], directory: "saveStructure", chatFunction:(chatSendEvent)=>{
-    saveStructure(chatSendEvent.sender, chatSendEvent.sender)
+    saveStructure(chatSendEvent)
 },})

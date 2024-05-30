@@ -1,4 +1,4 @@
-import { ActionFormData } from "@minecraft/server-ui";
+import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { MapParser } from "MapParser/loadMap";
 import { mapList } from "MapParser/mapList";
 import { LinkedList } from "dataTypes/linkedList";
@@ -23,12 +23,26 @@ const createLobby = async (hostPlayer, otherPlayers) => {
     while (lobbys.some(lobby => lobby.lobbyId === findID)) {
         findID++;
     }
-    const lobbyData = {
-        selectedMap: await mapSelector(hostPlayer),
-        lobbyId: findID,
-        hostPlayer: hostPlayer,
-        otherPlayers: otherPlayers
-    };
+    let lobbyData;
+    const createLobbyInitialScreen = new ModalFormData();
+    createLobbyInitialScreen.title("Create Lobby");
+    createLobbyInitialScreen.toggle("Public", false);
+    createLobbyInitialScreen.textField("Lobby Name", "Lobby Name", `${hostPlayer.name}'s lobby`);
+    createLobbyInitialScreen.textField("Lobby Password", "Lobby Password", "");
+    showHUD(hostPlayer, createLobbyInitialScreen).then(async (res) => {
+        if (res.canceled) {
+            return;
+        }
+        lobbyData = {
+            selectedMap: await mapSelector(hostPlayer),
+            lobbyId: findID,
+            publicLobby: res.formValues[0],
+            lobbyName: res.formValues[1],
+            lobbyPassword: res.formValues[2],
+            hostPlayer: hostPlayer,
+            otherPlayers: otherPlayers
+        };
+    });
     lobbys.append(lobbyData);
     //#region Lobby main screen
     createLobbyMainScreen(lobbyData);

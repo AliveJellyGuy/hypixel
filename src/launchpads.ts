@@ -92,7 +92,7 @@ class Launchpad extends BookData{  //to-do make this world data and rewrite some
                 for(const player of GlobalVars.players){
                     //world.sendMessage(`${CollisionFunctions.insideBox(player.location, launchpadVars.startLoc, launchpadVars.endLoc)}`)
                                 
-                    if(CollisionFunctions.insideBox(player.location, launchpadVars.startLoc, launchpadVars.endLoc, true, this.molangVars)){
+                    if(CollisionFunctions.insideBox(player.location, launchpadVars.startLoc, launchpadVars.endLoc, true)){
                         let playerVel = player.getVelocity()
                         let speed = VectorFunctions.vectorLength({x: playerVel.x, y: 0, z: playerVel.z})
                         if(speed < 1){
