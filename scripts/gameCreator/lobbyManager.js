@@ -70,6 +70,10 @@ const browseLobbys = async (searchingPlayer) => {
 };
 addCommand({ commandName: "browseLobbys", chatFunction: ((event) => { browseLobbys(event.sender); }), directory: "twla/lmao", commandPrefix: ";;" });
 const joinLobbyManually = async (searchingPlayer) => {
+    if (searchingPlayer.getHypixelValue("currentMatchID") != -1) {
+        searchingPlayer.sendMessage(`§cYou are already in a match.`);
+        return;
+    }
     const joinLobbyHud = new ModalFormData();
     joinLobbyHud.title("Enter Lobby Name");
     joinLobbyHud.textField("Lobby Name", "Lobby Name", "");

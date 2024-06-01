@@ -90,6 +90,10 @@ const browseLobbys = async (searchingPlayer: Player) => {
 addCommand({commandName: "browseLobbys", chatFunction: ((event) => {browseLobbys(event.sender)}), directory: "twla/lmao", commandPrefix: ";;"})
 
 const joinLobbyManually = async (searchingPlayer: Player) => {
+    if(searchingPlayer.getHypixelValue("currentMatchID") != -1) {
+        searchingPlayer.sendMessage(`§cYou are already in a match.`)
+        return
+    }
     const joinLobbyHud = new ModalFormData()
     joinLobbyHud.title("Enter Lobby Name")
     joinLobbyHud.textField("Lobby Name", "Lobby Name", "")

@@ -61,9 +61,12 @@ Player.prototype.awardLoss = function () {
 }
 
 Player.prototype.sendToHub = function () {
+    const player = this as Player
+    this as Player
     this.runCommand("clear")
     MapParser.removePlayerFromAllMaps(this);
     this.setSpawnFunction(normalSpawnFunction.bind(null, this));
+    player.setHypixelValue("currentMatchID", -1);
     this.teleport(GlobalVars.spawn);
 }
 //#endregion

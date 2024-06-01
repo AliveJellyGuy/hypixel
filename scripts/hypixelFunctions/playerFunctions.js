@@ -36,9 +36,12 @@ Player.prototype.awardLoss = function () {
     this.setHypixelValue("Current Winstreak", 0);
 };
 Player.prototype.sendToHub = function () {
+    const player = this;
+    this;
     this.runCommand("clear");
     MapParser.removePlayerFromAllMaps(this);
     this.setSpawnFunction(normalSpawnFunction.bind(null, this));
+    player.setHypixelValue("currentMatchID", -1);
     this.teleport(GlobalVars.spawn);
 };
 // Define an array containing the valid strings

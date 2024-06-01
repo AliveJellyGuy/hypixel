@@ -1,4 +1,3 @@
-import { Logger } from "staticScripts/Logger";
 class Node {
     constructor(data) {
         this.data = data;
@@ -24,14 +23,17 @@ export class LinkedList {
             current.next = newNode;
         }
         this.size++;
+        //Logger.warn(`Appended Node: ${JSON.stringify(data)}`);  
     }
     // Delete a node by its value
     deleteNodeByValue(data) {
         if (!this.head) {
+            //Logger.warn("List is empty");
             return;
         }
         // If the head node is the one to be deleted
         if (this.head.data === data) {
+            //Logger.warn(`Deleting Head Node: ${JSON.stringify(this.head.data)}`);
             this.head = this.head.next;
             this.size--;
             return;
@@ -39,9 +41,9 @@ export class LinkedList {
         let current = this.head;
         while (current.next) {
             if (current.next.data === data) {
+                //Logger.warn(`Deleting Node: ${JSON.stringify(current.data)}`);
                 current.next = current.next.next;
                 this.size--;
-                Logger.warn(`Deleting Node: ${data}`);
                 return;
             }
             current = current.next;

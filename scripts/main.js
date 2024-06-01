@@ -14,7 +14,7 @@ import "hypixelFunctions/playerSpawnHandler";
 import "./betterChat";
 import "./Bridge/bridge";
 import "./Bridge/BridgeWorld";
-import "./worldEdit/mainEdit";
+//import "./worldEdit/mainEdit";
 import "./hypixelCosmetic/particleEffects";
 import "./hypixelCosmetic/cosmeticInventory";
 import "./npc/npcInteract";
